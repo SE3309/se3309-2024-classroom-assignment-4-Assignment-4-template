@@ -1,0 +1,3 @@
+# local enivroments
+.venv/
+.env
