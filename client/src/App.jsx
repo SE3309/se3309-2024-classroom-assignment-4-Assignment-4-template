@@ -3,6 +3,11 @@ import './App.css'
 import SearchFlights from './components/SearchFlights';
 import BookHotelRoom from './components/BookHotelRoom';
 import AddReview from './components/AddReview';
+import ViewAverageRating from './components/ViewAverageRating';
+import CancelBooking from './components/CancelBooking';
+import UserBookingHistory from './components/UserBookingHistory';
+import CheckAvailableFlights from './components/CheckAvailableFlights';
+import UpdateUserPoints from './components/UpdateUserPoints';
 
 function App() {
     return (
@@ -18,7 +23,11 @@ function App() {
             <SearchFlights />
             <BookHotelRoom />
             <AddReview />
-
+            <ViewAverageRating />
+            <CancelBooking />
+            <UserBookingHistory />
+            <CheckAvailableFlights />
+            <UpdateUserPoints />
 
         </>
     )

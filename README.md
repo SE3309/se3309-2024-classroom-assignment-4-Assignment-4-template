@@ -11,6 +11,7 @@ The DUMP folder should contain the database .dump file required to re-create you
 # Set Up
 
 - cd client
+- npm install
 - npm run dev
 - go to localhost port
 
