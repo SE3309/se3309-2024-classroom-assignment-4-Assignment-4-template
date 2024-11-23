@@ -6,3 +6,48 @@
   color: rgba(255, 255, 255);
   background-color: #222;
 }
+
+h1 {
+    font-size: 4rem;
+    margin-bottom: 0;
+}
+
+.container {
+    background-color: white;
+    color: #222;
+    border-radius: 16px;
+    margin: 5% 10%;
+    min-height: 250px;
+    padding: 16px;
+}
+
+input, button {
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid #222;
+}
+button {
+    background-color: rgb(127, 203, 244);
+}
+button:hover {
+    background-color: rgb(111, 181, 219);
+}
+
+.searchInput * {
+    margin: 6px 10px;
+}
+
+ul {
+    padding: 0;
+    border: 1px solid #222;
+    border-radius: 16px;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+}
+li {
+    border-bottom: #7f7d7d;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
