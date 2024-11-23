@@ -18,6 +18,7 @@ The DUMP folder should contain the database .dump file required to re-create you
 
 
 # Functionality: (Name, Example SQL, Pseudocode function call)
+- Validation for each will be the retured results or success / error message + a component that shows the database
 
 # 1. Search Flights
 - Example:
@@ -150,8 +151,3 @@ WHERE userID = ?;
     - UserBookingHistory
     - CheckAvailableFlights
     - UpdateUserPoints
-
-
-
-
-

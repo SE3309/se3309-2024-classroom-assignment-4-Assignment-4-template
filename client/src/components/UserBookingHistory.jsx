@@ -33,11 +33,8 @@ function UserBookingHistory() {
                 bookingDate: 'Friday',
                 cost: '$1,000,000'
             }
-        ]
-        
+        ];
         setBookings(data);
-
-
     };
 
     return (

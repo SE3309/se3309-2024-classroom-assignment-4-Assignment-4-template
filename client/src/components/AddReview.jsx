@@ -8,7 +8,8 @@ function AddReview() {
     const [reviewComment, setReviewComment] = useState('');
     const [confirmation, setConfirmation] = useState(null);
 
-    const handleAddReview = async () => {
+    const handleAddReview = async (e) => {
+        e.preventDefault();
         /*
         const response = await fetch('/api/add-review', {
             method: 'POST',
@@ -20,9 +21,7 @@ function AddReview() {
 
         const data = {
             message: `Review added with ...`
-        }
-
-
+        };
         setConfirmation(data);
     };
 
@@ -30,45 +29,50 @@ function AddReview() {
         <div className='container addReview'>
             <h2>Add a Review</h2>
             <div className='userInput'>
-                <input
-                    type="text"
-                    placeholder="User ID"
-                    value={userID}
-                    onChange={(e) => setUserID(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Airline ID (leave blank for hotel)"
-                    value={airlineID}
-                    onChange={(e) => setAirlineID(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Hotel ID (leave blank for airline)"
-                    value={hotelID}
-                    onChange={(e) => setHotelID(e.target.value)}
-                />
-                <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    placeholder="Rating (1-5)"
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                />
-                <div>
-                    <textarea
-                        placeholder="Review Comment"
-                        value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
+                <form onSubmit={handleAddReview}>
+                    <input
+                        type="text"
+                        placeholder="User ID"
+                        value={userID}
+                        onChange={(e) => setUserID(e.target.value)}
+                        required
                     />
-                </div>
+                    <input
+                        type="text"
+                        placeholder="Airline ID (leave blank for hotel)"
+                        value={airlineID}
+                        onChange={(e) => setAirlineID(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="text"
+                        placeholder="Hotel ID (leave blank for airline)"
+                        value={hotelID}
+                        onChange={(e) => setHotelID(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        placeholder="Rating (1-5)"
+                        value={rating}
+                        onChange={(e) => setRating(e.target.value)}
+                        required
+                    />
+                    <div>
+                        <textarea
+                            placeholder="Review Comment"
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <div>
-                    <button onClick={handleAddReview}>Submit Review</button>
-                </div>
-
-
+                    <div>
+                        <button type='submit'>Submit Review</button>
+                    </div>
+                </form>
             </div>
 
             {confirmation && <p>{confirmation.message}</p>}

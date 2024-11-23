@@ -17,8 +17,8 @@ function CancelBooking() {
         });
         const data = await response.json();
         */
+       
         const data = { success: true };
-
         setConfirmation(data);
     };
 

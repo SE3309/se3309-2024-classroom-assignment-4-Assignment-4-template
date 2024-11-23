@@ -44,10 +44,8 @@ function CheckAvailableFlights() {
                 arrivalTime: '2pm',
                 price: 100000
             }
-        ]
-        
+        ];
         setFlights(data);
-        
     };
 
     return (
@@ -93,9 +91,7 @@ function CheckAvailableFlights() {
                 </form>
             </div>
 
-
             {error && <p>Error: {error}</p>}
-
             {flights.length > 0 && (
                 <div>
                     <h3>Available Flights</h3>

@@ -25,10 +25,8 @@ function UpdateUserPoints() {
         // TEST DATA
         const data = {
             success: true
-        }
+        };
         setConfirmation(data);
-
-
     };
 
     return (
@@ -56,7 +54,6 @@ function UpdateUserPoints() {
 
                 </form>
             </div>
-
 
             {confirmation && (
                 <p>

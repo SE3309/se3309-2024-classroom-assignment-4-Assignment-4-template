@@ -7,7 +7,9 @@ function SearchFlights() {
     const [endArrivalTime, setEndArrivalTime] = useState('');
     const [results, setResults] = useState([]);
 
-    const handleSearch = async () => {
+    const handleSearch = async (e) => {
+        e.preventDefault();
+
 
         // QUERY DATABASE
         /*
@@ -42,46 +44,52 @@ function SearchFlights() {
 
         setResults(data);
     };
-
+    
+    // Can leave times blank to widen search? - not required fields?
     return (
         <div className='container'>
 
             <h2>Search Flights</h2>
 
             <div className='userInput'>
-                <div>
-                    <input
-                        type="text"
-                        placeholder="Departure Airport Code"
-                        value={departureAirportCode}
-                        onChange={(e) => setDepartureAirportCode(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Arrival Airport Code"
-                        value={arrivalAirportCode}
-                        onChange={(e) => setArrivalAirportCode(e.target.value)}
-                    />
-                </div>
+                <form onSubmit={handleSearch}>
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Departure Airport Code"
+                            value={departureAirportCode}
+                            onChange={(e) => setDepartureAirportCode(e.target.value)}
+                            required
+                        />
+                        <input
+                            type="text"
+                            placeholder="Arrival Airport Code"
+                            value={arrivalAirportCode}
+                            onChange={(e) => setArrivalAirportCode(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <div>
-                    <p>Departure Time:</p>
-                    <input
-                        type="datetime-local"
-                        value={startDepartureTime}
-                        onChange={(e) => setStartDepartureTime(e.target.value)}
-                    />
-                    <p>Arrival Time:</p>
-                    <input
-                        type="datetime-local"
-                        value={endArrivalTime}
-                        onChange={(e) => setEndArrivalTime(e.target.value)}
-                    />
-                </div>
+                    <div>
+                        <p>Departure Time:</p>
+                        <input
+                            type="datetime-local"
+                            value={startDepartureTime}
+                            onChange={(e) => setStartDepartureTime(e.target.value)}
+                        />
+                        <p>Arrival Time:</p>
+                        <input
+                            type="datetime-local"
+                            value={endArrivalTime}
+                            onChange={(e) => setEndArrivalTime(e.target.value)}
+                        />
+                    </div>
 
-                <div>
-                    <button onClick={handleSearch}>Search</button>
-                </div>
+                    <div>
+                        <button type='submit'>Search</button>
+                    </div>
+                </form>
+
 
             </div>
 

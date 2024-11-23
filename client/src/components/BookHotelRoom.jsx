@@ -7,8 +7,9 @@ function BookHotelRoom() {
     const [checkOutDate, setCheckOutDate] = useState('');
     const [confirmation, setConfirmation] = useState(null);
 
-    const handleBooking = async () => {
-
+    const handleBooking = async (e) => {
+        e.preventDefault();
+        
         // QUERY DATABASE
         /*
         const response = await fetch('/api/book-hotel', {
@@ -37,46 +38,46 @@ function BookHotelRoom() {
 
         const data = {
             message: `Success: Booked ${testData[0].roomType} from ${testData[0].checkInDate} to ${testData[0].checkOutDate}`
-        }
-
+        };
         setConfirmation(data);
     };
 
     return (
         <div className='container'>
-
             <h2>Book a Hotel Room</h2>
-
             <div className='userInput'>
-                <input
-                    type="text"
-                    placeholder="Hotel ID"
-                    value={hotelID}
-                    onChange={(e) => setHotelID(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Room Type"
-                    value={roomType}
-                    onChange={(e) => setRoomType(e.target.value)}
-                />
-                <p>Check-In Date:</p>
-                <input
-                    type="date"
-                    value={checkInDate}
-                    onChange={(e) => setCheckInDate(e.target.value)}
-                />
-                <p>Check-Out Date:</p>
-                <input
-                    type="date"
-                    value={checkOutDate}
-                    onChange={(e) => setCheckOutDate(e.target.value)}
-                />
+                <form onSubmit={handleBooking}>
+                    <input
+                        type="text"
+                        placeholder="Hotel ID"
+                        value={hotelID}
+                        onChange={(e) => setHotelID(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="text"
+                        placeholder="Room Type"
+                        value={roomType}
+                        onChange={(e) => setRoomType(e.target.value)}
+                        required
+                    />
+                    <p>Check-In Date:</p>
+                    <input
+                        type="date"
+                        value={checkInDate}
+                        onChange={(e) => setCheckInDate(e.target.value)}
+                    />
+                    <p>Check-Out Date:</p>
+                    <input
+                        type="date"
+                        value={checkOutDate}
+                        onChange={(e) => setCheckOutDate(e.target.value)}
+                    />
 
-                <div>
-                    <button onClick={handleBooking}>Book</button>
-                </div>
-
+                    <div>
+                        <button type='submit'>Book</button>
+                    </div>
+                </form>
             </div>
 
             {confirmation && <p>Booking Confirmation: {confirmation.message}</p>}
