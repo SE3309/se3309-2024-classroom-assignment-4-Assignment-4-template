@@ -1,6 +1,8 @@
 import React from 'react';
 import './App.css'
 import SearchFlights from './components/SearchFlights';
+import BookHotelRoom from './components/BookHotelRoom';
+import AddReview from './components/AddReview';
 
 function App() {
     return (
@@ -14,7 +16,9 @@ function App() {
             </div>
 
             <SearchFlights />
-            
+            <BookHotelRoom />
+            <AddReview />
+
 
         </>
     )

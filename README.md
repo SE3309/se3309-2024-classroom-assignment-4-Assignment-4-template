@@ -7,7 +7,16 @@ The APP folder is where you should commit all the code for your web application.
 The DUMP folder should contain the database .dump file required to re-create your database and ALL of it's data.
 
 
-Functionality: (Name, Example SQL, Pseudocode function call)
+
+# Set Up
+
+- cd client
+- npm run dev
+- go to localhost port
+
+
+
+# Functionality: (Name, Example SQL, Pseudocode function call)
 
 # 1. Search Flights
 - Example:

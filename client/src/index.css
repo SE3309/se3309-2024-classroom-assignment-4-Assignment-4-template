@@ -1,10 +1,10 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 
-  color: rgba(255, 255, 255);
-  background-color: #222;
+    color: rgba(255, 255, 255);
+    background-color: #222;
 }
 
 h1 {
@@ -21,19 +21,23 @@ h1 {
     padding: 16px;
 }
 
-input, button {
+input,
+button {
     padding: 8px;
     border-radius: 16px;
     border: 1px solid #222;
+    min-width: auto;
 }
+
 button {
     background-color: rgb(127, 203, 244);
 }
+
 button:hover {
     background-color: rgb(111, 181, 219);
 }
 
-.searchInput * {
+.userInput * {
     margin: 6px 10px;
 }
 
@@ -45,9 +49,19 @@ ul {
     max-height: 200px;
     overflow-y: auto;
 }
+
 li {
     border-bottom: #7f7d7d;
     display: flex;
     justify-content: center;
     gap: 20px;
+}
+
+.addReview input {
+    min-width: 200px;
+}
+
+textarea {
+    min-width: 600px;
+    min-height: 100px;
 }

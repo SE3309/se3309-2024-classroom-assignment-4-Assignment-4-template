@@ -38,7 +38,7 @@ function SearchFlights() {
                 arrivalAirport: 'DTW',
                 price: 100
             }
-        ]
+        ];
 
         setResults(data);
     };
@@ -48,7 +48,7 @@ function SearchFlights() {
 
             <h2>Search Flights</h2>
 
-            <div className='searchInput'>
+            <div className='userInput'>
                 <div>
                     <input
                         type="text"
