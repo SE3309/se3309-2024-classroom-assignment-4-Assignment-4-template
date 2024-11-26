@@ -1,0 +1,63 @@
+/* ViewCalendar.css */
+.calendar-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .calendar-title {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .calendar-weeks {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .week {
+    border-top: 2px solid #ccc;
+    padding-top: 20px;
+  }
+  
+  .week-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .week-events {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .event-card {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #4caf50;
+  }
+  
+  .event-title {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .event-date,
+  .event-time {
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .event-description {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 10px;
+  }
+  
