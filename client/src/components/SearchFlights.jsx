@@ -22,7 +22,7 @@ function SearchFlights() {
       }),
     });
     const data = await response.json();
-    
+
     setResults(data);
   };
 
@@ -78,9 +78,9 @@ function SearchFlights() {
               <li key={flight.flightID}>
                 <p>Flight {flight.flightID}</p>
                 <p>
-                  {flight.departureAirport} (
+                  {flight.departureAirportName} - {flight.departureAirport} (
                   {new Date(flight.departureTime).toLocaleString()}) →{" "}
-                  {flight.arrivalAirport} (
+                  {flight.arrivalAirportName} - {flight.arrivalAirport} (
                   {new Date(flight.arrivalTime).toLocaleString()})
                 </p>
                 <p>Price: {flight.price}</p>

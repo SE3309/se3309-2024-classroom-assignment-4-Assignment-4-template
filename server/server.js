@@ -33,11 +33,23 @@ app.post("/api/search-flights", (req, res) => {
   } = req.body;
 
   const query = `
-        SELECT flightID, departureAirport, arrivalAirport, departureTime, arrivalTime, price
-        FROM Flight
-        WHERE departureAirport = ? AND arrivalAirport = ?
-        ${startDepartureTime ? "AND DATE(departureTime) >= DATE(?)" : ""}
-        ${endArrivalTime ? "AND DATE(arrivalTime) <= DATE(?)" : ""}
+  SELECT 
+    f.flightID, 
+    f.departureTime, 
+    f.arrivalTime, 
+    f.price,
+    f.departureAirport,
+    a1.airportName AS departureAirportName,
+    f.arrivalAirport, 
+    a2.airportName AS arrivalAirportName, 
+    al.name AS airlineName
+    FROM Flight f
+    JOIN Airport a1 ON f.departureAirport = a1.airportCode
+    JOIN Airport a2 ON f.arrivalAirport = a2.airportCode
+    JOIN Airline al ON f.airlineID = al.airlineID
+    WHERE f.departureAirport = ? AND f.arrivalAirport = ?
+    ${startDepartureTime ? "AND DATE(f.departureTime) >= DATE(?)" : ""}
+    ${endArrivalTime ? "AND DATE(f.arrivalTime) <= DATE(?)" : ""}
     `;
 
   const params = [departureAirportCode, arrivalAirportCode];
