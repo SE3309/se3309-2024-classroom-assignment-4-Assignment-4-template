@@ -1,5 +1,6 @@
 const express = require("express");
 const mysql = require("mysql2");
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,36 @@ db.connect((err) => {
   } else {
     console.log("Connected to the MySQL database");
   }
+});
+
+// search flights based on departure/arrival airports, option to enter departure/arrival times
+app.post("/api/search-flights", (req, res) => {
+  const {
+    departureAirportCode,
+    arrivalAirportCode,
+    startDepartureTime,
+    endArrivalTime,
+  } = req.body;
+
+  const query = `
+        SELECT flightID, departureAirport, arrivalAirport, departureTime, arrivalTime, price
+        FROM Flight
+        WHERE departureAirport = ? AND arrivalAirport = ?
+        ${startDepartureTime ? "AND DATE(departureTime) >= DATE(?)" : ""}
+        ${endArrivalTime ? "AND DATE(arrivalTime) <= DATE(?)" : ""}
+    `;
+
+  const params = [departureAirportCode, arrivalAirportCode];
+  if (startDepartureTime) params.push(startDepartureTime);
+  if (endArrivalTime) params.push(endArrivalTime);
+
+  db.query(query, params, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Error fetching flights");
+    }
+    res.json(results);
+  });
 });
 
 // set port
