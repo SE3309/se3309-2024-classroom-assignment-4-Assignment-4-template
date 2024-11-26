@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function SearchFlights() {
   const [departureAirportCode, setDepartureAirportCode] = useState("");
@@ -6,6 +6,17 @@ function SearchFlights() {
   const [startDepartureTime, setStartDepartureTime] = useState("");
   const [endArrivalTime, setEndArrivalTime] = useState("");
   const [results, setResults] = useState([]);
+  const [airportCodes, setAirportCodes] = useState([]);
+
+  useEffect(() => {
+    const fetchAirportCodes = async () => {
+      const response = await fetch("/api/airports");
+      const data = await response.json();
+      setAirportCodes(data.map((airport) => airport.airportCode));
+    };
+
+    fetchAirportCodes();
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -33,20 +44,35 @@ function SearchFlights() {
       <div className="userInput">
         <form onSubmit={handleSearch}>
           <div>
-            <input
-              type="text"
-              placeholder="Departure Airport Code"
+            <label htmlFor="departureAirport">Departure Airport:</label>
+            <select
+              id="departureAirport"
               value={departureAirportCode}
               onChange={(e) => setDepartureAirportCode(e.target.value)}
               required
-            />
-            <input
-              type="text"
-              placeholder="Arrival Airport Code"
+            >
+              <option value="">Select Departure Airport</option>
+              {airportCodes.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="arrivalAirport">Arrival Airport:</label>
+            <select
+              id="arrivalAirport"
               value={arrivalAirportCode}
               onChange={(e) => setArrivalAirportCode(e.target.value)}
               required
-            />
+            >
+              <option value="">Select Arrival Airport</option>
+              {airportCodes.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

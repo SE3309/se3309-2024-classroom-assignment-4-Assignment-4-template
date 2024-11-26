@@ -23,6 +23,19 @@ db.connect((err) => {
   }
 });
 
+// get airport codes for flight search dropdowns
+app.get("/api/airports", (req, res) => {
+  const query = `SELECT DISTINCT airportCode
+                FROM Airport`;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send(`Error fetching airport codes: ${err}`);
+    }
+    res.json(results);
+  });
+});
 // search flights based on departure/arrival airports, option to enter departure/arrival times
 app.post("/api/search-flights", (req, res) => {
   const {
@@ -59,7 +72,7 @@ app.post("/api/search-flights", (req, res) => {
   db.query(query, params, (err, results) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Error fetching flights");
+      return res.status(500).send(`Error fetching flights: ${err}`);
     }
     res.json(results);
   });

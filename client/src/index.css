@@ -77,3 +77,32 @@ textarea {
   margin-left: 10%;
   margin-right: 10%;
 }
+
+select {
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid #222;
+  background-color: white;
+  color: #222;
+  min-width: auto;
+  font-family: inherit;
+  font-size: 1rem;
+  appearance: none; /* Removes default browser arrow styling */
+  outline: none;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: rgb(127, 203, 244); /* Matches the button hover color */
+}
+
+select:focus {
+  border-color: rgb(111, 181, 219); /* Matches the button hover color */
+  box-shadow: 0 0 5px rgba(127, 203, 244, 0.5);
+}
+
+select option {
+  background-color: white;
+  color: #222;
+  font-family: inherit;
+}
