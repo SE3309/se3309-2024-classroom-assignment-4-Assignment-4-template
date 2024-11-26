@@ -73,7 +73,15 @@ function SearchFlights() {
       {results.length > 0 && (
         <div>
           <h3>Flight Results</h3>
+
           <ul>
+            <div className="resultHeader">
+              <strong>Flight #</strong>
+              <strong>Departure Location</strong>
+              <strong>Arrival Location</strong>
+              <strong>Price</strong>
+            </div>
+
             {results.map((flight) => (
               <li key={flight.flightID}>
                 <p>Flight {flight.flightID}</p>
