@@ -244,6 +244,44 @@ app.get('/albumInfo/:albumID', (req, res) => {
     });
 });
 
+app.get('/playlistInfo/:playlistID', (req, res) => {
+    const playlistID = req.params.playlistID; // PlaylistID provided in the request
+
+    // Query to get playlist details including MediaIDs
+    const query = `
+        SELECT 
+            p.PlaylistID, 
+            p.Description, 
+            p.Creator, 
+            p.DateAdded, 
+            GROUP_CONCAT(p.MediaID) AS MediaIDs
+        FROM 
+            playlist p
+        WHERE 
+            p.PlaylistID = ?
+        GROUP BY 
+            p.PlaylistID, p.Description, p.Creator, p.DateAdded
+    `;
+
+    db.query(query, [playlistID], (err, result) => {
+        if (err) {
+            console.error('SQL Error:', err.message);
+            return res.status(500).json({ error: 'Failed to retrieve playlist details.', details: err.message });
+        }
+
+        // Check if the playlist exists
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Playlist not found.' });
+        }
+
+        // Return the playlist's details
+        res.status(200).json({
+            message: 'Playlist details retrieved successfully.',
+            playlist: result[0],
+        });
+    });
+});
+
 
 
 // Start the server
