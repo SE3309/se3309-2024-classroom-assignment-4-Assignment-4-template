@@ -7,7 +7,7 @@ const Example = () => {
 
   // Fetching data from the Flask backend
   useEffect(() => {
-    axios.get("http://localhost:5000/example")
+    axios.get("http://localhost:5000/api/example")
       .then(response => {
         setStudents(response.data);
       })

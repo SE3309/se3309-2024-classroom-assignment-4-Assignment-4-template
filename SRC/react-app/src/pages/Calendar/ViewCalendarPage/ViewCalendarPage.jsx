@@ -14,7 +14,7 @@ const ViewCalendarPage = () => {
         const studentId = 1;  // Set to 1 for now
 
         try {
-            const response = await fetch(`http://localhost:5000/events/${studentId}`);
+            const response = await fetch(`http://localhost:5000/api/events/${studentId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch events');
             }
@@ -73,7 +73,7 @@ const ViewCalendarPage = () => {
 
         if (confirmDelete) {
             try {
-                const response = await fetch(`http://localhost:5000/events/${eventId}`, {
+                const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
                     method: 'DELETE',
                 });
 

@@ -1,0 +1,41 @@
+.launch-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+.launch-buttons {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.launch-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.launch-button.student {
+    background-color: #007bff;
+    color: white;
+}
+
+.launch-button.student:hover {
+    background-color: #0056b3;
+}
+
+.launch-button.faculty {
+    background-color: #28a745;
+    color: white;
+}
+
+.launch-button.faculty:hover {
+    background-color: #1e7e34;
+}
