@@ -10,7 +10,7 @@ function SearchFlights() {
 
   useEffect(() => {
     const fetchAirportCodes = async () => {
-      token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       const response = await fetch("/api/airports", {
         headers: {
@@ -19,6 +19,7 @@ function SearchFlights() {
         },
       });
       const data = await response.json();
+
       setAirportCodes(data.map((airport) => airport.airportCode));
     };
 
@@ -27,11 +28,15 @@ function SearchFlights() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
 
     // QUERY DATABASE
     const response = await fetch("/api/search-flights", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         departureAirportCode,
         arrivalAirportCode,
@@ -39,6 +44,7 @@ function SearchFlights() {
         endArrivalTime,
       }),
     });
+
     const data = await response.json();
 
     setResults(data);
