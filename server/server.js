@@ -78,6 +78,87 @@ app.post("/api/search-flights", (req, res) => {
   });
 });
 
+// hotel booking
+app.post("/api/book-hotel", (req, res) => {
+  const { hotelName, roomType, checkInDate, checkOutDate } = req.body;
+  const { userID } = req.user;
+
+  const availabilityQuery = `
+    SELECT hr.hotelID, hr.availabilityStatus, hr.pricePerNight 
+    FROM HotelRoom hr
+    JOIN Hotel h ON hr.hotelID = h.hotelID
+    WHERE h.hotelName = ? AND hr.roomType = ?;
+  `;
+
+  const availabilityParams = [hotelName, roomType];
+
+  // get hotel availability
+  db.query(availabilityQuery, availabilityParams, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send(`Error getting hotel availability: ${err}`);
+    }
+    const { hotelID, availabilityStatus, pricePerNight } = results[0];
+
+    if (!availabilityStatus) {
+      return res.status(400).json({
+        message: `Sorry, the ${roomType} room at ${hotelName} is not available.`,
+      });
+    }
+
+    // calculate total cost for booking
+    const nights = Math.ceil(
+      (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
+    );
+    const cost = pricePerNight * nights;
+
+    // good, handle booking
+    const bookingQuery = `
+      INSERT INTO Booking (userID, cost, bookingStatus, bookingDate) 
+      VALUES (?, ?, 'confirmed', CURDATE());
+    `;
+
+    const bookingParams = [userID, cost];
+
+    // insert booking into db
+    db.query(bookingQuery, bookingParams, (err, bookingResults) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error creating booking: ${err}`);
+      }
+
+      const bookingID = bookingResults.insertId;
+
+      const hotelBookingQuery = `
+          INSERT INTO HotelBooking (hotelID, bookingID, checkInDate, checkOutDate, roomType) 
+          VALUES (?, ?, ?, ?, ?);
+        `;
+
+      const hotelBookingParams = [
+        hotelID,
+        bookingID,
+        checkInDate,
+        checkOutDate,
+        roomType,
+      ];
+
+      // insert into HotelBooking table
+      db.query(hotelBookingQuery, hotelBookingParams, (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send(`Error linking booking to hotel: ${err}`);
+        }
+
+        return res.status(200).json({
+          message: `Successfully booked the ${roomType} room at ${hotelName}.`,
+          bookingID,
+          cost,
+        });
+      });
+    });
+  });
+});
+
 // set port
 const PORT = process.env.PORT || 3001;
 
