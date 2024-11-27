@@ -1,10 +1,44 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const mysql = require("mysql2");
 require("dotenv").config();
+const passport = require("passport");
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// passport setup
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.SECRET,
+};
+
+passport.use(
+  new JwtStrategy(opts, async (jwt_payload, done) => {
+    const query = `
+      SELECT * FROM User
+      WHERE userID = ?;
+    `;
+
+    const params = [jwt_payload.userID];
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error(err);
+        return done(err, false);
+      }
+
+      if (results.length === 0) {
+        return done(null, false, { message: "User not found" });
+      }
+      const user = results[0];
+      return done(null, user);
+    });
+  })
+);
 
 // MySQL connection setup
 const db = mysql.createConnection({
@@ -23,35 +57,240 @@ db.connect((err) => {
   }
 });
 
-// search flights based on departure/arrival airports, option to enter departure/arrival times
-app.post("/api/search-flights", (req, res) => {
-  const {
-    departureAirportCode,
-    arrivalAirportCode,
-    startDepartureTime,
-    endArrivalTime,
-  } = req.body;
+// registration route
+app.post("/api/register", (req, res) => {
+  const { name, email, password } = req.body;
 
-  const query = `
-        SELECT flightID, departureAirport, arrivalAirport, departureTime, arrivalTime, price
-        FROM Flight
-        WHERE departureAirport = ? AND arrivalAirport = ?
-        ${startDepartureTime ? "AND DATE(departureTime) >= DATE(?)" : ""}
-        ${endArrivalTime ? "AND DATE(arrivalTime) <= DATE(?)" : ""}
-    `;
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-  const params = [departureAirportCode, arrivalAirportCode];
-  if (startDepartureTime) params.push(startDepartureTime);
-  if (endArrivalTime) params.push(endArrivalTime);
+  const checkQuery = `
+  SELECT * FROM User
+  WHERE email = ?
+  `;
 
-  db.query(query, params, (err, results) => {
+  const checkParams = [email];
+
+  db.query(checkQuery, checkParams, async (err, results) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Error fetching flights");
+      return res.status(500).send(`Error: ${err}`);
     }
-    res.json(results);
+
+    if (results.length > 0) {
+      return res.status(400).json({ message: "Email is already registered." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const insertQuery = `
+    INSERT INTO User (name, email, password)
+    VALUES (?,?,?);
+    `;
+
+    const insertParams = [name, email, hashedPassword];
+
+    db.query(insertQuery, insertParams, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error: ${err}`);
+      }
+
+      return res.status(201).json({ message: "User Registered successfully." });
+    });
   });
 });
+
+// login route
+app.post("/api/login", (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  const query = `
+  SELECT * FROM User
+  WHERE email = ?
+  `;
+  const params = [email];
+
+  db.query(query, params, async (err, results) => {
+    if (results.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Login unsuccessful: Email not found." });
+    }
+
+    const user = results[0];
+
+    const match = await bcrypt.compare(password, user.password);
+
+    // if the password matches, generate and return a token
+    if (match) {
+      // generate token
+      const token = jwt.sign({ userID: user.userID }, process.env.SECRET, {
+        expiresIn: "1d",
+      });
+      return res.status(200).json({ message: "Login successful!", token });
+    }
+
+    return res
+      .status(400)
+      .json({ message: "Login unsuccessful: Incorrect password." });
+  });
+});
+
+// get airport codes for flight search dropdowns
+app.get(
+  "/api/airports",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const query = `SELECT DISTINCT airportCode
+                FROM Airport`;
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error fetching airport codes: ${err}`);
+      }
+      res.json(results);
+    });
+  }
+);
+// search flights based on departure/arrival airports, option to enter departure/arrival times
+app.post(
+  "/api/search-flights",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const {
+      departureAirportCode,
+      arrivalAirportCode,
+      startDepartureTime,
+      endArrivalTime,
+    } = req.body;
+
+    const query = `
+  SELECT 
+    f.flightID, 
+    f.departureTime, 
+    f.arrivalTime, 
+    f.price,
+    f.departureAirport,
+    a1.airportName AS departureAirportName,
+    f.arrivalAirport, 
+    a2.airportName AS arrivalAirportName, 
+    al.name AS airlineName
+    FROM Flight f
+    JOIN Airport a1 ON f.departureAirport = a1.airportCode
+    JOIN Airport a2 ON f.arrivalAirport = a2.airportCode
+    JOIN Airline al ON f.airlineID = al.airlineID
+    WHERE f.departureAirport = ? AND f.arrivalAirport = ?
+    ${startDepartureTime ? "AND DATE(f.departureTime) >= DATE(?)" : ""}
+    ${endArrivalTime ? "AND DATE(f.arrivalTime) <= DATE(?)" : ""}
+    `;
+
+    const params = [departureAirportCode, arrivalAirportCode];
+    if (startDepartureTime) params.push(startDepartureTime);
+    if (endArrivalTime) params.push(endArrivalTime);
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error fetching flights: ${err}`);
+      }
+      res.json(results);
+    });
+  }
+);
+
+// hotel booking
+app.post(
+  "/api/book-hotel",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { hotelName, roomType, checkInDate, checkOutDate } = req.body;
+    const { userID } = req.user;
+
+    const availabilityQuery = `
+    SELECT hr.hotelID, hr.availabilityStatus, hr.pricePerNight 
+    FROM HotelRoom hr
+    JOIN Hotel h ON hr.hotelID = h.hotelID
+    WHERE h.hotelName = ? AND hr.roomType = ?;
+  `;
+
+    const availabilityParams = [hotelName, roomType];
+
+    // get hotel availability
+    db.query(availabilityQuery, availabilityParams, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error getting hotel availability: ${err}`);
+      }
+      const { hotelID, availabilityStatus, pricePerNight } = results[0];
+
+      if (!availabilityStatus) {
+        return res.status(400).json({
+          message: `Sorry, the ${roomType} room at ${hotelName} is not available.`,
+        });
+      }
+
+      // calculate total cost for booking
+      const nights = Math.ceil(
+        (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
+      );
+      const cost = pricePerNight * nights;
+
+      // good, handle booking
+      const bookingQuery = `
+      INSERT INTO Booking (userID, cost, bookingStatus, bookingDate) 
+      VALUES (?, ?, 'confirmed', CURDATE());
+    `;
+
+      const bookingParams = [userID, cost];
+
+      // insert booking into db
+      db.query(bookingQuery, bookingParams, (err, bookingResults) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send(`Error creating booking: ${err}`);
+        }
+
+        const bookingID = bookingResults.insertId;
+
+        const hotelBookingQuery = `
+          INSERT INTO HotelBooking (hotelID, bookingID, checkInDate, checkOutDate, roomType) 
+          VALUES (?, ?, ?, ?, ?);
+        `;
+
+        const hotelBookingParams = [
+          hotelID,
+          bookingID,
+          checkInDate,
+          checkOutDate,
+          roomType,
+        ];
+
+        // insert into HotelBooking table
+        db.query(hotelBookingQuery, hotelBookingParams, (err) => {
+          if (err) {
+            console.error(err);
+            return res
+              .status(500)
+              .send(`Error linking booking to hotel: ${err}`);
+          }
+
+          return res.status(200).json({
+            message: `Successfully booked the ${roomType} room at ${hotelName}.`,
+            bookingID,
+            cost,
+          });
+        });
+      });
+    });
+  }
+);
 
 // set port
 const PORT = process.env.PORT || 3001;
