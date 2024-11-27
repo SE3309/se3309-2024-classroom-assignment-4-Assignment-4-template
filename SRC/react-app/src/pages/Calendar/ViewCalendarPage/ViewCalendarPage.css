@@ -1,0 +1,110 @@
+/* CalendarComponent.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Horizontally center */
+    align-items: center; /* Vertically center */
+    background-color: #f7f7f7; /* Background color for the entire screen */
+}
+
+.calendar-container {
+    width: 1000px; /* Full width */
+  
+    height: auto;
+    min-height: 400px; /* Height adjusts automatically */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    overflow-y: auto; /* Allow scrolling if the content overflows */
+}
+
+.calendar-container h2 {
+    font-size: 2rem;
+    color: #333;
+    text-align: center;
+}
+
+.calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.calendar-navigation button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.calendar-navigation button:hover {
+    background-color: #0056b3;
+}
+
+.current-week {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.calendar-events {
+    margin-top: 20px;
+}
+
+.calendar-event {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.event-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.event-time {
+    font-size: 1rem;
+    color: #333;
+}
+
+.event-duration {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.event-description {
+    font-size: 1rem;
+    color: #666;
+}
+/* ViewCalendarPage.css */
+.back-home-button {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.back-home-button button {
+    background-color: #6c757d; /* Neutral grey color */
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.back-home-button button:hover {
+    background-color: #495057; /* Darker grey for hover */
+}
+
