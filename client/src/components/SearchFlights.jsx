@@ -100,27 +100,34 @@ function SearchFlights() {
         <div>
           <h3>Flight Results</h3>
 
-          <ul>
-            <div className="resultHeader">
-              <strong>Flight #</strong>
-              <strong>Departure Location</strong>
-              <strong>Arrival Location</strong>
-              <strong>Price</strong>
-            </div>
-
-            {results.map((flight) => (
-              <li key={flight.flightID}>
-                <p>Flight {flight.flightID}</p>
-                <p>
-                  {flight.departureAirportName} - {flight.departureAirport} (
-                  {new Date(flight.departureTime).toLocaleString()}) →{" "}
-                  {flight.arrivalAirportName} - {flight.arrivalAirport} (
-                  {new Date(flight.arrivalTime).toLocaleString()})
-                </p>
-                <p>Price: {flight.price}</p>
-              </li>
-            ))}
-          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>Flight #</th>
+                <th>Departure Location</th>
+                <th>Arrival Location</th>
+                <th>Airline</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((flight) => (
+                <tr key={flight.flightID}>
+                  <td>Flight {flight.flightID}</td>
+                  <td>
+                    {flight.departureAirportName} - {flight.departureAirport} (
+                    {new Date(flight.departureTime).toLocaleString()})
+                  </td>
+                  <td>
+                    {flight.arrivalAirportName} - {flight.arrivalAirport} (
+                    {new Date(flight.arrivalTime).toLocaleString()})
+                  </td>
+                  <td>{flight.airlineName}</td>
+                  <td>${flight.price}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
