@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tailwindcss -i ./SRC/input.css -o ./SRC/output.css --watch"
+    "dev": "npx tailwindcss -i ./SRC/frontend/styles/input.css -o ./SRC/frontend/styles/output.css --watch"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "express": "^4.21.1",
     "mysql": "^2.18.1"
   }
