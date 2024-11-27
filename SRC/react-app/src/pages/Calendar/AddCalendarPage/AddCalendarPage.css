@@ -1,69 +1,86 @@
-/* AddCalendarPage.css */
+/* Add Calendar Container */
 .add-event-container {
-    max-width: 600px;
-    margin: 50px auto;
+    width: 800px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-left: 100px; /* Matches the margin style */
 }
 
 .add-event-container h2 {
-    font-size: 2rem;
-    color: #333;
     text-align: center;
+    font-size: 2em;
+    color: #333;
 }
 
+/* Form Styling */
 .add-event-container form {
     display: flex;
     flex-direction: column;
+    gap: 15px; /* Adds consistent spacing between form elements */
 }
 
 .add-event-container label {
-    margin-top: 10px;
     font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
 }
 
 .add-event-container input,
 .add-event-container textarea {
     padding: 10px;
-    margin-top: 5px;
     font-size: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
+    background-color: #ffffff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Ensures inputs take full width */
 }
 
+.add-event-container textarea {
+    resize: vertical; /* Allow vertical resizing */
+    min-height: 80px; /* Provide a default height for text areas */
+}
+
+/* Submit Button */
 .add-event-container button {
-    margin-top: 20px;
-    background-color: #007bff;
+    background-color: #2ecc71; /* Matches the add-event button in your calendar */
     color: white;
     padding: 10px 20px;
     font-size: 1rem;
+    font-weight: bold;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
 }
 
 .add-event-container button:hover {
-    background-color: #0056b3;
+    background-color: #27ae60;
 }
 
-/* Styling for the Back Button */
+/* Back Button Section */
 .back-button {
     margin-top: 20px;
     text-align: center;
 }
 
 .back-button button {
-    background-color: #6c757d;
+    background-color: #3498db;
     color: white;
     padding: 10px 20px;
     font-size: 1rem;
+    font-weight: bold;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .back-button button:hover {
-    background-color: #495057;
+    background-color: #2980b9;
 }

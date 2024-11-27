@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import moment from 'moment'; // For date manipulation
+import moment from 'moment-timezone'; // For date manipulation with time zone
 import { Link } from 'react-router-dom'; // For navigation
 import './ViewCalendarPage.css';
 
 const ViewCalendarPage = () => {
-    // State for current week, events in that week, and loading state
     const [currentWeek, setCurrentWeek] = useState(moment());
     const [weekEvents, setWeekEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -42,7 +41,6 @@ const ViewCalendarPage = () => {
         fetchEvents();
     }, [currentWeek]); // Refetch events when currentWeek changes
 
-    // Handle navigation to the next and previous weeks
     const goToNextWeek = () => {
         setCurrentWeek(prev => moment(prev).add(1, 'week'));
     };
@@ -53,18 +51,57 @@ const ViewCalendarPage = () => {
 
     // Helper function to format event duration (in seconds)
     const eventDuration = (duration) => {
-        // Ensure the duration is a number (in seconds)
         if (typeof duration === 'number') {
             const hours = Math.floor(duration / 3600);  // Convert seconds to hours
             const minutes = Math.floor((duration % 3600) / 60);  // Get minutes
             const seconds = duration % 60;  // Get remaining seconds
 
-            // Format the duration into HH:MM:SS
             return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
         return 'Invalid Duration';  // Fallback for invalid duration data
     };
+
+    // Handle event deletion with confirmation and lecture check
+    const handleDeleteEvent = async (eventId, isLecture) => {
+        if (isLecture) {
+            // Block deletion of lecture events
+            alert('Weekly lectures cannot be deleted.');
+            return;
+        }
+
+        const confirmDelete = window.confirm('Are you sure you want to delete this event?');
+
+        if (confirmDelete) {
+            try {
+                const response = await fetch(`http://localhost:5000/events/${eventId}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete the event');
+                }
+
+                console.log('Event successfully deleted');
+                fetchEvents();  // Refresh the events after deletion
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                setError('Failed to delete the event. Please try again.');
+            }
+        }
+    };
+
+    // Group events by day
+    const eventsByDay = {};
+    weekEvents.forEach(event => {
+        const eventDate = moment(event.eventStart).format('YYYY-MM-DD'); // Format date as YYYY-MM-DD
+        if (!eventsByDay[eventDate]) {
+            eventsByDay[eventDate] = [];
+        }
+        eventsByDay[eventDate].push(event);
+    });
+
+    // Get the list of days in the current week (from Sunday to Saturday)
+    const weekDays = Array.from({ length: 7 }, (_, i) => moment(currentWeek).startOf('week').add(i, 'days'));
 
     return (
         <div className="calendar-container">
@@ -96,21 +133,39 @@ const ViewCalendarPage = () => {
                     <p className="loading">Loading events...</p>
                 ) : error ? (
                     <p className="error">Error: {error}</p>
-                ) : weekEvents.length === 0 ? (
-                    <p className="no-events">No events this week</p>
                 ) : (
-                    weekEvents.map(event => (
-                        <div key={event.eventID} className="calendar-event">
-                            <span className="event-name">{event.eventName}</span>
-                            <span className="event-time">
-                                {moment(event.eventStart).format('YYYY-MM-DD HH:mm')}
-                            </span>
-                            <span className="event-duration">
-                                Duration: {eventDuration(event.eventDuration)}
-                            </span>
-                            <p className="event-description">{event.eventDescription}</p>
-                        </div>
-                    ))
+                    weekDays.map(day => {
+                        const formattedDay = day.format('YYYY-MM-DD');
+                        const dayEvents = eventsByDay[formattedDay] || [];
+
+                        return (
+                            <div key={formattedDay} className="calendar-day">
+                                <h3>{day.format('dddd, MMMM Do YYYY')}</h3>
+                                {dayEvents.length === 0 ? (
+                                    <p>No events</p>
+                                ) : (
+                                    dayEvents.map(event => (
+                                        <div key={event.eventID} className="calendar-event">
+                                            <span className="event-name">{event.eventName}</span>
+                                            <span className="event-time">
+                                                {moment(event.eventStart).tz('America/Toronto').format('YYYY-MM-DD HH:mm')}  {/* Converts to Eastern Time Zone */}
+                                            </span>
+                                            <span className="event-duration">
+                                                Duration: {eventDuration(event.eventDuration)}
+                                            </span>
+                                            <p className="event-description">{event.eventDescription}</p>
+                                            <button
+                                                className="delete-button"
+                                                onClick={() => handleDeleteEvent(event.eventID, !!event.courseCode)}  
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>

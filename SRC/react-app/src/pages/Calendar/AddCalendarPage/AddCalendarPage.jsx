@@ -7,15 +7,46 @@ const AddCalendarPage = () => {
     const [eventDescription, setEventDescription] = useState('');
     const [eventStart, setEventStart] = useState('');
     const [eventDuration, setEventDuration] = useState('');
+    const [error, setError] = useState(null); // To handle errors
 
     const navigate = useNavigate();
 
-    const handleAddEvent = () => {
-        // Here you can implement the logic to add the event
-        console.log('Event Added:', { eventName, eventDescription, eventStart, eventDuration });
+    const handleAddEvent = async () => {
+        try {
+            // Construct the event object
+            const newEvent = {
+                eventName,
+                eventDescription,
+                eventStart,
+                eventDuration,
+                studentId:1,
+                cyear:null,
+                courseCode:null,
 
-        // Redirect back to the calendar page
-        navigate('/');
+            };
+
+            // Call the backend API to insert the event
+            const response = await fetch('http://localhost:5000/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newEvent),
+            });
+
+            // Check for errors in the response
+            if (!response.ok) {
+                throw new Error('Failed to add the event');
+            }
+
+            console.log('Event successfully added:', newEvent);
+
+            // Redirect back to the calendar page
+            navigate('/view-calendar');
+        } catch (error) {
+            console.error('Error adding event:', error);
+            setError('Failed to add the event. Please try again.');
+        }
     };
 
     return (
@@ -58,6 +89,9 @@ const AddCalendarPage = () => {
                 </div>
                 <button type="button" onClick={handleAddEvent}>Add Event</button>
             </form>
+
+            {/* Display error message if any */}
+            {error && <div className="error-message">{error}</div>}
 
             {/* Back Button */}
             <div className="back-button">
