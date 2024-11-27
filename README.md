@@ -26,15 +26,19 @@ The DUMP folder should contain the database .dump file required to re-create you
     f.flightID, 
     f.departureTime, 
     f.arrivalTime, 
-    f.price, 
-    a1.airportName AS departureAirport, 
-    a2.airportName AS arrivalAirport, 
+    f.price,
+    f.departureAirport,
+    a1.airportName AS departureAirportName,
+    f.arrivalAirport, 
+    a2.airportName AS arrivalAirportName, 
     al.name AS airlineName
-FROM Flight f
-JOIN Airport a1 ON f.departureAirport = a1.airportCode
-JOIN Airport a2 ON f.arrivalAirport = a2.airportCode
-JOIN Airline al ON f.airlineID = al.airlineID
-WHERE f.departureAirport = ? AND f.arrivalAirport = ? AND f.departureTime >= ? AND f.arrivalTime <= ?;
+    FROM Flight f
+    JOIN Airport a1 ON f.departureAirport = a1.airportCode
+    JOIN Airport a2 ON f.arrivalAirport = a2.airportCode
+    JOIN Airline al ON f.airlineID = al.airlineID
+    WHERE f.departureAirport = ? AND f.arrivalAirport = ?
+    AND DATE(f.departureTime) >= DATE(?)
+    AND DATE(f.arrivalTime) <= DATE(?)
 
 
 - function searchFlights(departureAirportCode, arrivalAirportCode, startDepartureTime, endArrivalTime)
