@@ -10,18 +10,14 @@ function AddReview() {
 
     const handleAddReview = async (e) => {
         e.preventDefault();
-        /*
+        if (airlineID == '' && hotelID == '') return alert('Enter either an AirlineID or HotelID!')
+        
         const response = await fetch('/api/add-review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userID, airlineID, hotelID, rating, reviewComment }),
         });
         const data = await response.json();
-        */
-
-        const data = {
-            message: `Review added with ...`
-        };
         setConfirmation(data);
     };
 
@@ -42,14 +38,14 @@ function AddReview() {
                         placeholder="Airline ID (leave blank for hotel)"
                         value={airlineID}
                         onChange={(e) => setAirlineID(e.target.value)}
-                        required
+                        
                     />
                     <input
                         type="text"
                         placeholder="Hotel ID (leave blank for airline)"
                         value={hotelID}
                         onChange={(e) => setHotelID(e.target.value)}
-                        required
+                        
                     />
                     <input
                         type="number"
@@ -75,7 +71,7 @@ function AddReview() {
                 </form>
             </div>
 
-            {confirmation && <p>{confirmation.message}</p>}
+            {confirmation && <p>{confirmation.reviewID}</p>}
         </div>
     );
 }

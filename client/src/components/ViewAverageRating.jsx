@@ -8,19 +8,14 @@ function ViewAverageRating() {
     const handleViewRating = async (e) => {
         e.preventDefault();
         if (airlineID == '' && hotelID == '') return alert('Enter either an AirlineID or HotelID!')
-        /*
+        
         const response = await fetch('/api/view-rating', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ airlineID, hotelID }),
         });
         const data = await response.json();
-        */
-
-        // TEST DATA
-        const data = {
-            averageRating: 4.7
-        };
+        
         setAverageRating(data.averageRating);
     };
 

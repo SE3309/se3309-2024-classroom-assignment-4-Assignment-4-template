@@ -48,6 +48,7 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+
 // Connect to the database
 db.connect((err) => {
   if (err) {
@@ -139,6 +140,73 @@ app.post("/api/login", (req, res) => {
     return res
       .status(400)
       .json({ message: "Login unsuccessful: Incorrect password." });
+  });
+});
+
+//functionality to add a review
+app.post("/api/add-review", (req, res) => {
+  const { userID, airlineID, hotelID, rating, reviewComment } = req.body;
+
+  if (!userID || !rating || !reviewComment) {
+    return res.status(400).json({ error: "userID, rating, and reviewComment are required" });
+  }
+
+  if (!airlineID && !hotelID) {
+    return res.status(400).json({ error: "At least one of airlineID and hotelID are required" });
+  }
+
+  if (airlineID && hotelID) {
+    return res.status(400).json({ error: "Only one of airline or hotel can be chosen" });
+  }
+
+
+  const query = `
+    INSERT INTO Review (userID, airlineID, hotelID, rating, reviewComment, dateCreated)
+    VALUES (?, ?, ?, ?, ?, CAST(NOW() AS DATE))
+  `;
+
+  const params = [userID, airlineID || null, hotelID || null, rating, reviewComment,];
+
+
+  db.query(query, params, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: "Error adding review" , details: err.message});
+    }
+    res.status(201).json({ message: "Review added successfully", reviewID: results.insertId });
+  });
+});
+
+//Functionality to view the average rating for a hotel or airline
+app.post("/api/view-rating", (req, res) => {
+  const { airlineID, hotelID } = req.body;
+
+  if (!airlineID && !hotelID) {
+    return res.status(400).json({ error: "Provide either an airlineID or hotelID" });
+  }
+
+  if (airlineID && hotelID) {
+    return res.status(400).json({ error: "Provide just 1 of an airlineID or hotelID" });
+  }
+
+  const query = `
+    SELECT AVG(rating) AS averageRating
+    FROM Review
+    WHERE ${airlineID ? "airlineID = ?" : "hotelID = ?"}
+  `;
+
+  const param = airlineID || hotelID;
+
+  db.query(query, [param], (err, results) => {
+    if (err) {
+      console.error("Error fetching average rating:", err);
+      return res.status(500).json({ error: "Error fetching average rating" });
+    }
+
+    if (results.length === 0 || results[0].averageRating === null) {
+      return res.status(404).json({ error: "No reviews found for the given ID" });
+    }
+
+    res.status(200).json({ averageRating: results[0].averageRating });
   });
 });
 
