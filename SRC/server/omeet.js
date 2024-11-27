@@ -8,7 +8,7 @@ const PORT= 3000;
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'Idunknow2!',
+    password: '',
     database: 'bratmusic' // Correct database name
 });
 
