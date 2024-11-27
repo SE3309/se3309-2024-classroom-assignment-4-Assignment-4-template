@@ -1,110 +1,110 @@
-/* CalendarComponent.css */
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center; /* Horizontally center */
-    align-items: center; /* Vertically center */
-    background-color: #f7f7f7; /* Background color for the entire screen */
-}
-
+/* General Calendar Container */
 .calendar-container {
-    width: 1000px; /* Full width */
-  
-    height: auto;
-    min-height: 400px; /* Height adjusts automatically */
+    width:800px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
-    overflow-y: auto; /* Allow scrolling if the content overflows */
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+   margin-left: 100px;
 }
 
-.calendar-container h2 {
-    font-size: 2rem;
-    color: #333;
+h2 {
     text-align: center;
+    font-size: 2em;
+    color: #333;
 }
 
+/* Calendar Navigation */
 .calendar-navigation {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    margin: 20px 0;
 }
 
 .calendar-navigation button {
-    background-color: #007bff;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.calendar-navigation .current-week {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Add Event Button */
+.add-event-button {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.add-event-button button {
+    background-color: #2ecc71;
     color: white;
     padding: 10px 20px;
-    font-size: 1rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-.calendar-navigation button:hover {
-    background-color: #0056b3;
-}
-
-.current-week {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
+/* Event Container */
 .calendar-events {
     margin-top: 20px;
 }
 
 .calendar-event {
-    padding: 15px;
-    margin-bottom: 10px;
-    background-color: #f4f4f4;
-    border-radius: 5px;
+    background-color: #ffffff;
     border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.event-name {
-    font-size: 1.2rem;
+.calendar-event .event-name {
+    font-size: 1.5em;
     font-weight: bold;
-    color: #007bff;
-}
-
-.event-time {
-    font-size: 1rem;
     color: #333;
 }
 
-.event-duration {
-    font-size: 0.9rem;
-    color: #555;
-}
-
-.event-description {
-    font-size: 1rem;
+.calendar-event .event-time {
+    font-size: 1.1em;
     color: #666;
 }
-/* ViewCalendarPage.css */
-.back-home-button {
-    text-align: center;
-    margin-bottom: 20px;
+
+.calendar-event .event-duration {
+    font-size: 1.1em;
+    color: #27ae60;
 }
 
-.back-home-button button {
-    background-color: #6c757d; /* Neutral grey color */
-    color: white;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 5px;
+.calendar-event .event-description {
+    font-size: 1em;
+    color: #444;
+    line-height: 1.4;
+}
+
+.calendar-event:hover {
+    background-color: #f1f1f1;
     cursor: pointer;
 }
 
-.back-home-button button:hover {
-    background-color: #495057; /* Darker grey for hover */
+/* Loading and Error Messages */
+.loading, .error {
+    font-size: 1.2em;
+    text-align: center;
+    color: #e74c3c;
 }
 
+.no-events {
+    text-align: center;
+    font-size: 1.2em;
+    color: #f39c12;
+}

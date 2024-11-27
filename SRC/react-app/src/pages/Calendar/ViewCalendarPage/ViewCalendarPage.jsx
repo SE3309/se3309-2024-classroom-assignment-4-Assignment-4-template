@@ -4,52 +4,43 @@ import { Link } from 'react-router-dom'; // For navigation
 import './ViewCalendarPage.css';
 
 const ViewCalendarPage = () => {
-    // Example events data
-    const eventsData = [
-        {
-            eventID: 5272,
-            eventName: 'Student Event',
-            eventDescription: 'Event for Student 156',
-            eventStart: '2024-12-31 17:00:00',
-            eventDuration: '3:00:00',
-            courseCode: null,
-            cyear: null,
-            studentID: 156,
-        },
-        {
-            eventID: 5273,
-            eventName: 'Course Registration Deadline',
-            eventDescription: 'Final date for course registration',
-            eventStart: '2025-01-20 09:00:00',
-            eventDuration: '2:00:00',
-            courseCode: 'CS101',
-            cyear: '2025',
-            studentID: 156,
-        },
-        // Add other events here...
-    ];
-
-    // State for current week and events in that week
+    // State for current week, events in that week, and loading state
     const [currentWeek, setCurrentWeek] = useState(moment());
     const [weekEvents, setWeekEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Get events for the current week
-    const getEventsForWeek = () => {
-        const startOfWeek = currentWeek.clone().startOf('week').startOf('day'); 
-        const endOfWeek = currentWeek.clone().endOf('week').endOf('day'); 
+    // Fetch events for the given student ID (set to 1 for now)
+    const fetchEvents = async () => {
+        const studentId = 1;  // Set to 1 for now
 
-        // Filter events that fall within the current week
-        const eventsInWeek = eventsData.filter(event => {
-            const eventStart = moment(event.eventStart);
-            return eventStart.isSameOrAfter(startOfWeek) && eventStart.isSameOrBefore(endOfWeek);
-        });
+        try {
+            const response = await fetch(`http://localhost:5000/events/${studentId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch events');
+            }
+            const data = await response.json();
 
-        setWeekEvents(eventsInWeek);
+            // Filter events that fall within the current week
+            const startOfWeek = currentWeek.clone().startOf('week').startOf('day');
+            const endOfWeek = currentWeek.clone().endOf('week').endOf('day');
+
+            const eventsInWeek = data.filter(event => {
+                const eventStart = moment(event.eventStart);
+                return eventStart.isSameOrAfter(startOfWeek) && eventStart.isSameOrBefore(endOfWeek);
+            });
+
+            setWeekEvents(eventsInWeek);
+            setLoading(false);
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        getEventsForWeek();
-    }, [currentWeek]);
+        fetchEvents();
+    }, [currentWeek]); // Refetch events when currentWeek changes
 
     // Handle navigation to the next and previous weeks
     const goToNextWeek = () => {
@@ -60,10 +51,19 @@ const ViewCalendarPage = () => {
         setCurrentWeek(prev => moment(prev).subtract(1, 'week'));
     };
 
-    // Helper function to format event duration
+    // Helper function to format event duration (in seconds)
     const eventDuration = (duration) => {
-        const [hours, minutes] = duration.split(':');
-        return `${hours} hours ${minutes} minutes`;
+        // Ensure the duration is a number (in seconds)
+        if (typeof duration === 'number') {
+            const hours = Math.floor(duration / 3600);  // Convert seconds to hours
+            const minutes = Math.floor((duration % 3600) / 60);  // Get minutes
+            const seconds = duration % 60;  // Get remaining seconds
+
+            // Format the duration into HH:MM:SS
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        return 'Invalid Duration';  // Fallback for invalid duration data
     };
 
     return (
@@ -90,9 +90,14 @@ const ViewCalendarPage = () => {
                 </Link>
             </div>
 
+            {/* Display Loading or Events */}
             <div className="calendar-events">
-                {weekEvents.length === 0 ? (
-                    <p>No events this week</p>
+                {loading ? (
+                    <p className="loading">Loading events...</p>
+                ) : error ? (
+                    <p className="error">Error: {error}</p>
+                ) : weekEvents.length === 0 ? (
+                    <p className="no-events">No events this week</p>
                 ) : (
                     weekEvents.map(event => (
                         <div key={event.eventID} className="calendar-event">
