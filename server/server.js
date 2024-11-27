@@ -205,6 +205,24 @@ app.post(
   }
 );
 
+// fetch hotels
+app.get(
+  "/api/hotels",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const query = `SELECT hotelName
+                FROM Hotel`;
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error fetching hotels: ${err}`);
+      }
+      res.json(results);
+    });
+  }
+);
+
 // hotel booking
 app.post(
   "/api/book-hotel",
@@ -222,72 +240,129 @@ app.post(
 
     const availabilityParams = [hotelName, roomType];
 
-    // get hotel availability
-    db.query(availabilityQuery, availabilityParams, (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send(`Error getting hotel availability: ${err}`);
-      }
-      const { hotelID, availabilityStatus, pricePerNight } = results[0];
-
-      if (!availabilityStatus) {
-        return res.status(400).json({
-          message: `Sorry, the ${roomType} room at ${hotelName} is not available.`,
-        });
+    db.beginTransaction((transactionErr) => {
+      if (transactionErr) {
+        console.error(transactionErr);
+        return res
+          .status(500)
+          .send(`Error starting transaction: ${transactionErr}`);
       }
 
-      // calculate total cost for booking
-      const nights = Math.ceil(
-        (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
-      );
-      const cost = pricePerNight * nights;
-
-      // good, handle booking
-      const bookingQuery = `
-      INSERT INTO Booking (userID, cost, bookingStatus, bookingDate) 
-      VALUES (?, ?, 'confirmed', CURDATE());
-    `;
-
-      const bookingParams = [userID, cost];
-
-      // insert booking into db
-      db.query(bookingQuery, bookingParams, (err, bookingResults) => {
+      // get hotel availability
+      db.query(availabilityQuery, availabilityParams, (err, results) => {
         if (err) {
-          console.error(err);
-          return res.status(500).send(`Error creating booking: ${err}`);
-        }
-
-        const bookingID = bookingResults.insertId;
-
-        const hotelBookingQuery = `
-          INSERT INTO HotelBooking (hotelID, bookingID, checkInDate, checkOutDate, roomType) 
-          VALUES (?, ?, ?, ?, ?);
-        `;
-
-        const hotelBookingParams = [
-          hotelID,
-          bookingID,
-          checkInDate,
-          checkOutDate,
-          roomType,
-        ];
-
-        // insert into HotelBooking table
-        db.query(hotelBookingQuery, hotelBookingParams, (err) => {
-          if (err) {
+          db.rollback(() => {
             console.error(err);
             return res
               .status(500)
-              .send(`Error linking booking to hotel: ${err}`);
+              .send(`Error getting hotel availability: ${err}`);
+          });
+        }
+
+        const { hotelID, availabilityStatus, pricePerNight } = results[0];
+
+        if (!availabilityStatus) {
+          return db.rollback(() => {
+            res.status(400).json({
+              message: `Sorry, the ${roomType} room at ${hotelName} is not available.`,
+            });
+          });
+        }
+
+        // calculate total cost for booking
+        const nights = Math.ceil(
+          (new Date(checkOutDate) - new Date(checkInDate)) /
+            (1000 * 60 * 60 * 24)
+        );
+        const cost = pricePerNight * nights;
+
+        const bookingQuery = `
+        INSERT INTO Booking (userID, cost, bookingStatus, bookingDate) 
+        VALUES (?, ?, 'confirmed', CURDATE());
+      `;
+
+        const bookingParams = [userID, cost];
+
+        // insert booking into db
+        db.query(bookingQuery, bookingParams, (err, bookingResults) => {
+          if (err) {
+            return db.rollback(() => {
+              console.error(err);
+              res.status(500).send(`Error creating booking: ${err}`);
+            });
           }
 
-          return res.status(200).json({
-            message: `Successfully booked the ${roomType} room at ${hotelName}.`,
+          const bookingID = bookingResults.insertId;
+
+          const hotelBookingQuery = `
+            INSERT INTO HotelBooking (hotelID, bookingID, checkInDate, checkOutDate, roomType) 
+            VALUES (?, ?, ?, ?, ?);
+          `;
+
+          const hotelBookingParams = [
+            hotelID,
             bookingID,
-            cost,
+            checkInDate,
+            checkOutDate,
+            roomType,
+          ];
+
+          db.query(hotelBookingQuery, hotelBookingParams, (err) => {
+            if (err) {
+              return db.rollback(() => {
+                console.error(err);
+                res.status(500).send(`Error linking booking to hotel: ${err}`);
+              });
+            }
+
+            // Commit transaction
+            db.commit((commitErr) => {
+              if (commitErr) {
+                return db.rollback(() => {
+                  console.error(commitErr);
+                  res
+                    .status(500)
+                    .send(`Error committing transaction: ${commitErr}`);
+                });
+              }
+
+              res.status(200).json({
+                message: `Successfully booked the ${roomType} room at ${hotelName}.`,
+                bookingID,
+                cost,
+              });
+            });
           });
         });
       });
+    });
+  }
+);
+
+// get bookings for a user
+app.get(
+  "/api/bookings",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { userID } = req.user;
+
+    const query = `
+    SELECT b.bookingID, cost, bookingStatus, b.bookingDate, h.hotelName, 
+    h.city, hb.checkInDate, hb.checkOutDate, hb.roomType 
+    FROM Booking b, HotelBooking hb, Hotel h
+    WHERE b.bookingID = hb.bookingID
+    AND hb.hotelID = h.hotelID
+    AND b.userID = ? 
+    ORDER BY b.bookingID DESC
+    `;
+    const params = [userID];
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error fetching bookings: ${err}`);
+      }
+      res.json(results);
     });
   }
 );
