@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import SearchFlights from "./components/SearchFlights";
 import BookHotelRoom from "./components/BookHotelRoom";
@@ -9,22 +9,32 @@ import UserBookingHistory from "./components/UserBookingHistory";
 import CheckAvailableFlights from "./components/CheckAvailableFlights";
 import UpdateUserPoints from "./components/UpdateUserPoints";
 import AuthPage from "./components/AuthPage";
+import { jwtDecode } from "jwt-decode";
 
 function App() {
-  const token = localStorage.getItem("token");
-  let isAuthenticated = false;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      isAuthenticated = decoded && decoded.exp > Date.now() / 1000; // check token expiration
-    } catch (err) {
-      localStorage.removeItem("token");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.exp > Date.now() / 1000) {
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem("token");
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+      }
     }
-  }
+  }, []);
 
   if (!isAuthenticated) {
-    return <AuthPage />;
+    return <AuthPage setIsAuthenticated={setIsAuthenticated} />;
   }
 
   return (

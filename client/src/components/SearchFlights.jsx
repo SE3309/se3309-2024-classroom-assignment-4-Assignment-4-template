@@ -10,7 +10,14 @@ function SearchFlights() {
 
   useEffect(() => {
     const fetchAirportCodes = async () => {
-      const response = await fetch("/api/airports");
+      token = localStorage.getItem("token");
+
+      const response = await fetch("/api/airports", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setAirportCodes(data.map((airport) => airport.airportCode));
     };

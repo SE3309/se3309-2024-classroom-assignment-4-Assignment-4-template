@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Login() {
+function Login({ setIsAuthenticated }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,11 +16,12 @@ function Login() {
       });
 
       const data = await response.json();
+
       if (response.ok) {
-        localStorage.setItem("token", data.token); // Store JWT token
-        window.location.href = "/"; // Redirect to homepage
+        localStorage.setItem("token", data.token);
+        setIsAuthenticated(true); // sets isAuthenticated state variable to true
       } else {
-        setError("Invalid credentials. Please try again.");
+        setError(data.message || "Invalid credentials. Please try again.");
       }
     } catch (err) {
       setError("An error occurred. Please try again later.");
