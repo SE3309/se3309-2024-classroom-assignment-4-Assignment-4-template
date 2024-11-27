@@ -1,72 +1,33 @@
-from flask import Blueprint, request, jsonify
-from db_connection import MySQLConnection
+from flask import Blueprint, jsonify
+from db_connection import DBConnection
+import os
 
-# Define the Blueprint
-routes = Blueprint("routes", __name__)
-db = MySQLConnection(host='localhost', user='root', password='password', database='your_database')
-db.connect()
+# Create a Blueprint for your routes
+routes = Blueprint('routes', __name__)
 
-@routes.route("/login", methods=["POST"])
-def login_user(studentID, password):
-    try:
-        results = db.login(studentID=studentID, password=password)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Initialize the DB connection with environment variables
+db = DBConnection(
+    host=os.getenv("HOST"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD"),
+    database=os.getenv("DATABASE")
+)
 
-@routes.route("/register/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#Example
+@routes.route('/example')
+def get_data():
+    conn = db.get_connection()  # Get the database connection
 
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-@routes.route("/get_all/<table_name>", methods=["GET"])
-def get_all(table_name):
-    try:
-        results = db.get_all_from_table(table_name)
-        return jsonify({"results": results})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
 
+    cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for better readability
+    cursor.execute("SELECT * FROM Student "+
+                   "WHERE studentId = 10")
+                     # Replace with your table name
+    result = cursor.fetchall()  # Fetch all rows of the query result
+
+    cursor.close()
+    db.close_connection()  # Close the connection after use
+
+    return jsonify(result)  # Return data as JSON
