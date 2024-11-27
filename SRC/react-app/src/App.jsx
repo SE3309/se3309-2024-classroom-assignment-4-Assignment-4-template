@@ -1,25 +1,71 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage/HomePage'; // Adjust path if needed
-import LoginPage from './pages/LoginPage/LoginPage'; // Adjust path if needed
-import ViewCalendarPage from './pages/Calendar/ViewCalendarPage/ViewCalendarPage'; // Adjust path if needed
-import AddCalendarPage from './pages/Calendar/AddCalendarPage/AddCalendarPage'; // Adjust path if needed
-import Example from './pages/Example/Example'; // Adjust path if needed
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './pages/HomePage/HomePage';
+import StudentLoginPage from './pages/StudentLoginPage/StudentLoginPage';
+import ViewCalendarPage from './pages/Calendar/ViewCalendarPage/ViewCalendarPage';
+import AddCalendarPage from './pages/Calendar/AddCalendarPage/AddCalendarPage';
+import Example from './pages/Example/Example';
+import LaunchPage from './pages/LaunchPage/LaunchPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header/Header';
 
 
 const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/home" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/view-calendar" element={<ViewCalendarPage />} />
-                <Route path="/add-event" element={<AddCalendarPage />} />
+                {/* Public Routes */}
+                <Route path="/" element={<LaunchPage />} />
+                <Route path="/student-login" element={<StudentLoginPage />} />
 
+                {/* Protected Routes */}
+                <Route
+                    path="/home"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <HomePage />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/view-calendar"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <ViewCalendarPage />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/add-event"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <AddCalendarPage />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/example"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <Example />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
 
-
-                <Route path="/example" element={<Example />} />
-
+                {/* Catch-all Route */}
+                <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </Router>
     );

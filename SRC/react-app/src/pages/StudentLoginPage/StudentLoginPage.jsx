@@ -1,28 +1,33 @@
-// LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './LoginPage.css'; // For styles (optional)
+import AuthService from '../../services/AuthService'; // AuthService for authentication
+import './StudentLoginPage.css';
 
-const LoginPage = () => {
+const StudentLoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Mock authentication logic (replace with actual API call)
-        if (email === 'user@example.com' && password === 'password') {
-            setError('');
-            navigate('/'); // Navigate to the Home Page
-        } else {
-            setError('Invalid email or password');
+
+        try {
+            // Call AuthService to log in
+            const response = await AuthService.login(email, password);
+            if (response.success) {
+                navigate('/home'); // Redirect to the dashboard or home page
+            } else {
+                setError(response.message || 'Login failed. Please try again.');
+            }
+        } catch (err) {
+            setError(err.message || 'An error occurred. Please try again.');
         }
     };
 
     return (
         <div className="login-page">
-            <h2>Login</h2>
+            <h2>Student Login</h2>
             <form onSubmit={handleLogin}>
                 <div className="form-group">
                     <label htmlFor="email">Email:</label>
@@ -51,4 +56,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default StudentLoginPage;
