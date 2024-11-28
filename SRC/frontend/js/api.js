@@ -27,5 +27,11 @@ async function loginDispatcher(phoneNo) {
     const error = await response.text();
     throw new Error(error);
   }
-  return response.json();
+
+  const dispatcher = await response.json();
+
+  // Save dispatcher details to local storage
+  localStorage.setItem('dispatcher', JSON.stringify(dispatcher));
+
+  return dispatcher;
 }

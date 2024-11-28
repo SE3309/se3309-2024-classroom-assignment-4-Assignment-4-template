@@ -3,8 +3,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   const phoneNo = document.getElementById('phoneNo').value;
 
   try {
-    const response = await loginDispatcher(phoneNo);
-    alert(`Welcome, ${response.dispatcher.name}!`);
+    const dispatcher = await loginDispatcher(phoneNo);
+    alert(`Welcome, ${dispatcher.firstName} ${dispatcher.lastName}!`);
     window.location.href = "dashboard.html";
   } catch (err) {
     alert(`Login failed: ${err.message}`);
