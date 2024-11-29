@@ -6,4 +6,14 @@ const getAvailableDriversCount = (callback) => {
   db.query(query, [], callback);
 };
 
-module.exports = { getAvailableDriversCount };
+// Get all drivers
+const getAllDrivers = (callback) => {
+  const query = 'SELECT * FROM Drivers';
+  db.query(query, callback);
+};
+
+// Export both 'getAvailableDriversCount' and 'getAllDrivers' functions
+module.exports = {
+  getAvailableDriversCount,
+  getAllDrivers,
+};
