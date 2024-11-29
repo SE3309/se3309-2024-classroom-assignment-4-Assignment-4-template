@@ -78,6 +78,21 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/index.html"));
 });
 
+app.get("/videogame/:id", (req,res) => {
+  const {id} = req.params;
+  const query = "SELECT * FROM VideoGame WHERE game_id = ?";
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error("Error while fetching the game:", err);
+      res.status(500).send("Error while fetching the game");
+    } else if (results.length === 0) {
+      res.status(404).send("Game not found");
+    } else {
+      res.status(200).json(results[0]); // Return the first matching result
+    }
+  });
+});
+
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
