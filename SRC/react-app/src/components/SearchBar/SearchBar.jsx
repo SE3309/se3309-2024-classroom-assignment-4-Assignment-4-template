@@ -1,35 +1,33 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
-function SearchBar() {
+function SearchBar({ onSearch }) {
     const [search, setSearch] = useState("")
-    const [error, setError] = useState("")
-    const [noOfResults] = useState(10)
+    const [noOfResults, setNoResults] = useState(10);
 
-    const handleSubmit = () => {
-        try {
+    const handleSearch = () => {
+        // Pass both search and noOfResults to the parent component
+        onSearch({ noOfResults, search });
+      };
 
-        } catch (err) {
-            console.log("Error is: ", err)
-        }
-    }
   return (
     <div className='searchbar-container'>
-        <form onSubmit={handleSubmit}>
-            <label htmlFor='search'></label>
-            <input
-            type='text'
-            id={search}
-            required>
-            </input>
+        <select onChange={(e) => setNoResults(e.target.value)}
+            className='n-search'>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+            <option value={50}>25</option>  
+        </select>
 
-            <label htmlFor='resultNo'></label>
-            <select>
-                <option value="10"></option>
-                <option value="15"></option>
-                <option value="20"></option>
-                <option value="50"></option>
-            </select>
-        </form>
+        <input
+            type="text"
+            placeholder="Search a course..."
+            value={search} // Correctly bind to `search` state
+            onChange={(e) => setSearch(e.target.value)} // Update state on input
+            className="search-input"
+        />
+
+        <button onClick={handleSearch} className="search-button">Search</button>
     </div>
   )
 }

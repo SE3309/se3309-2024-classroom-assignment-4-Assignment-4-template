@@ -117,8 +117,11 @@ def faculty_login():
 @routes.route('/api/student/search', methods=['GET'])
 def get_student_search(): 
     search = request.args.get('search')  # Capture 'search' from query parameters
-    if not search:
+    print("search is: ", search)
+    if not search or len(search.strip()) == 0:
         return jsonify({"error": "Missing 'search' parameter"}), 400
+    
+    search = f"%{search.lower()}%"
     
     conn = db.get_connection()
     if conn is None: 
@@ -129,7 +132,7 @@ def get_student_search():
         query = """
         SELECT * 
         FROM CourseDetails
-        WHERE courseName like %s OR courseCode like %s
+        WHERE LOWER(courseName) like %s OR LOWER(courseCode) like %s
         """
         cursor.execute(query, (search, search))
         result = cursor.fetchall()
@@ -178,6 +181,10 @@ def get_courses():
 
 @routes.route('/api/student/register', methods=['POST'])
 def course_register():
+    return
+
+@routes.route('/api/student/unregister', methods=['POST'])
+def course_unregister():
     return
 
 
