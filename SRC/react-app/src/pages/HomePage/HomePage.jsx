@@ -7,9 +7,17 @@ const HomePage = () => {
     const [user] = useState({ email: 'student@example.com' }); // Replace with actual user data
     const navigate = useNavigate(); // Hook for navigating to different pages
 
-    const handleActionClick = (action) => {
-        alert(`Action: ${action}`);
+    const handleCourseSearch = () => {
+        navigate('/course-search'); // Navigate to the course search page
     };
+
+    const handleViewCouse = () => {
+        navigate('/view-course')
+    }
+
+    const handleRegisterUnregister = () => {
+        nagivate('/registration')
+    }
 
     const handleViewCalendar = () => {
         navigate('/view-calendar'); // Navigate to the calendar page
@@ -21,9 +29,9 @@ const HomePage = () => {
             <p className="status-message">You are logged in as a Student!</p>
             <div className="home-content">
                 {/* Student-specific Actions */}
-                <button className="action-button" onClick={() => handleActionClick('Course Search')}>Search for Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('View Courses')}>View Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('Register/Unregister for Courses')}>Register/Unregister for Courses</button>
+                <button className="action-button" onClick={() => handleCourseSearch('Course Search')}>Search for Courses</button>
+                <button className="action-button" onClick={() => handleViewCouse('View Courses')}>View Courses</button>
+                <button className="action-button" onClick={() => handleRegisterUnregister('Register/Unregister for Courses')}>Register/Unregister for Courses</button>
                 <button className="action-button" onClick={() => handleActionClick('View Transcript')}>View Transcript</button>
 
                 {/* Calendar Group for Students */}

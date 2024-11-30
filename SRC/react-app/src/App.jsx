@@ -9,6 +9,7 @@ import LaunchPage from './pages/LaunchPage/LaunchPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header/Header';
 import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
+import SearchCourse from './pages/SearchCourse/SearchCourse';
 
 
 const App = () => {
@@ -61,6 +62,42 @@ const App = () => {
                             <>
                                 <Header />
                                 <Example />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/course-search"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <SearchCourse />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/view-course"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <SearchCourse />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/registration"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <SearchCourse />
                             </>
                         </ProtectedRoute>
                     }
