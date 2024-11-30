@@ -1,3 +1,4 @@
+const db = require('../db'); // Add this line
 const { 
   getPaginatedDrivers, 
   getAvailableDriversCount, 
@@ -77,22 +78,38 @@ const updateDriverById = (req, res) => {
   const { id } = req.params;
   const driverData = req.body;
 
-  // Validate input
-  if (
-    !driverData.F_Name ||
-    !driverData.L_Name ||
-    !driverData.License_Type ||
-    driverData.Availability === undefined ||
-    !driverData.Phone_No ||
-    !driverData.Dispatcher_ID
-  ) {
-    return res.status(400).json({ error: 'All fields are required' });
+  // Build the update query dynamically to handle optional fields
+  const validFields = ['F_Name', 'L_Name', 'License_Type', 'Availability', 'Phone_No'];
+  const updates = [];
+  const values = [];
+
+  validFields.forEach((field) => {
+    if (driverData[field] !== undefined) {
+      updates.push(`${field} = ?`);
+      values.push(driverData[field]);
+    }
+  });
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No valid fields provided for update' });
   }
 
-  updateDriver(id, driverData, (err, result) => {
+  values.push(id); // Add the driver ID to the query parameters
+
+  const query = `
+    UPDATE Drivers
+    SET ${updates.join(', ')}
+    WHERE Driver_ID = ?;
+  `;
+
+  console.log('Generated Query:', query);
+  console.log('Query Parameters:', values);
+
+  // Execute the query
+  db.query(query, values, (err, result) => {
     if (err) {
       console.error('Error updating driver:', err);
-      return res.status(500).json({ error: 'Failed to update driver' });
+      return res.status(500).json({ error: 'Failed to update driver', details: err.message });
     }
 
     if (result.affectedRows === 0) {
