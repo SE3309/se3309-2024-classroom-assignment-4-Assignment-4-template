@@ -75,15 +75,18 @@ const addNewDriver = (req, res) => {
 
 // Controller to update driver details
 const updateDriverById = (req, res) => {
-  const { id } = req.params;
+  const driverId = parseInt(req.params.id, 10); // Ensure ID is a number
+  if (isNaN(driverId)) {
+    return res.status(400).json({ error: 'Invalid Driver_ID' });
+  }
+
   const driverData = req.body;
 
-  // Build the update query dynamically to handle optional fields
   const validFields = ['F_Name', 'L_Name', 'License_Type', 'Availability', 'Phone_No'];
   const updates = [];
   const values = [];
 
-  validFields.forEach((field) => {
+  validFields.forEach(field => {
     if (driverData[field] !== undefined) {
       updates.push(`${field} = ?`);
       values.push(driverData[field]);
@@ -94,7 +97,7 @@ const updateDriverById = (req, res) => {
     return res.status(400).json({ error: 'No valid fields provided for update' });
   }
 
-  values.push(id); // Add the driver ID to the query parameters
+  values.push(driverId); // Add Driver_ID to query parameters
 
   const query = `
     UPDATE Drivers
@@ -102,14 +105,10 @@ const updateDriverById = (req, res) => {
     WHERE Driver_ID = ?;
   `;
 
-  console.log('Generated Query:', query);
-  console.log('Query Parameters:', values);
-
-  // Execute the query
   db.query(query, values, (err, result) => {
     if (err) {
-      console.error('Error updating driver:', err);
-      return res.status(500).json({ error: 'Failed to update driver', details: err.message });
+      console.error('Error updating driver:', err.message);
+      return res.status(500).json({ error: 'Failed to update driver', debug: err.message });
     }
 
     if (result.affectedRows === 0) {
@@ -119,6 +118,8 @@ const updateDriverById = (req, res) => {
     res.status(200).json({ message: 'Driver updated successfully' });
   });
 };
+
+
 
 // Controller to delete a driver by ID
 const deleteDriverByIdController = (req, res) => {
