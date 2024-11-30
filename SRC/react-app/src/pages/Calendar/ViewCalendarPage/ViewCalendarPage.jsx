@@ -1,35 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import moment from 'moment-timezone'; // For date manipulation with time zone
-import { Link } from 'react-router-dom'; // For navigation
+import { useState, useEffect, useContext } from 'react';
+import moment from 'moment-timezone';
+import { Link } from 'react-router-dom';
+import { UserContext } from '../../../context/UserContext';
 import './ViewCalendarPage.css';
 
 const ViewCalendarPage = () => {
-    const [currentWeek, setCurrentWeek] = useState(moment());
-    const [weekEvents, setWeekEvents] = useState([]);
+    const [currentDate, setCurrentDate] = useState(moment());
+    const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { user } = useContext(UserContext);
 
-    // Fetch events for the given student ID (set to 1 for now)
     const fetchEvents = async () => {
-        const studentId = 1;  // Set to 1 for now
-
         try {
-            const response = await fetch(`http://localhost:5000/api/events/${studentId}`);
+            const response = await fetch(`http://localhost:5000/api/events/${user.studentID}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch events');
             }
             const data = await response.json();
-
-            // Filter events that fall within the current week
-            const startOfWeek = currentWeek.clone().startOf('week').startOf('day');
-            const endOfWeek = currentWeek.clone().endOf('week').endOf('day');
-
-            const eventsInWeek = data.filter(event => {
-                const eventStart = moment(event.eventStart);
-                return eventStart.isSameOrAfter(startOfWeek) && eventStart.isSameOrBefore(endOfWeek);
-            });
-
-            setWeekEvents(eventsInWeek);
+            setEvents(data);
             setLoading(false);
         } catch (error) {
             setError(error.message);
@@ -38,136 +27,113 @@ const ViewCalendarPage = () => {
     };
 
     useEffect(() => {
-        fetchEvents();
-    }, [currentWeek]); // Refetch events when currentWeek changes
-
-    const goToNextWeek = () => {
-        setCurrentWeek(prev => moment(prev).add(1, 'week'));
-    };
-
-    const goToPrevWeek = () => {
-        setCurrentWeek(prev => moment(prev).subtract(1, 'week'));
-    };
-
-    // Helper function to format event duration (in seconds)
-    const eventDuration = (duration) => {
-        if (typeof duration === 'number') {
-            const hours = Math.floor(duration / 3600);  // Convert seconds to hours
-            const minutes = Math.floor((duration % 3600) / 60);  // Get minutes
-            const seconds = duration % 60;  // Get remaining seconds
-
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (user) {
+            fetchEvents();
         }
-        return 'Invalid Duration';  // Fallback for invalid duration data
-    };
+    }, [user]);
 
-    // Handle event deletion with confirmation and lecture check
-    const handleDeleteEvent = async (eventId, isLecture) => {
-        if (isLecture) {
-            // Block deletion of lecture events
-            alert('Weekly lectures cannot be deleted.');
-            return;
-        }
-
-        const confirmDelete = window.confirm('Are you sure you want to delete this event?');
-
-        if (confirmDelete) {
-            try {
-                const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
-                    method: 'DELETE',
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete the event');
-                }
-
-                console.log('Event successfully deleted');
-                fetchEvents();  // Refresh the events after deletion
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                setError('Failed to delete the event. Please try again.');
+    const handleDeleteEvent = async (eventId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                fetchEvents();
+            } else {
+                throw new Error('Failed to delete event');
             }
+        } catch (error) {
+            setError(error.message);
         }
     };
 
-    // Group events by day
-    const eventsByDay = {};
-    weekEvents.forEach(event => {
-        const eventDate = moment(event.eventStart).format('YYYY-MM-DD'); // Format date as YYYY-MM-DD
-        if (!eventsByDay[eventDate]) {
-            eventsByDay[eventDate] = [];
-        }
-        eventsByDay[eventDate].push(event);
-    });
+    const getDaysInMonth = () => {
+        const startOfMonth = currentDate.clone().startOf('month').startOf('week');
+        const endOfMonth = currentDate.clone().endOf('month').endOf('week');
+        const days = [];
+        let day = startOfMonth.clone();
 
-    // Get the list of days in the current week (from Sunday to Saturday)
-    const weekDays = Array.from({ length: 7 }, (_, i) => moment(currentWeek).startOf('week').add(i, 'days'));
+        while (day.isSameOrBefore(endOfMonth, 'day')) {
+            days.push(day.clone());
+            day.add(1, 'day');
+        }
+        return days;
+    };
+
+    const getEventsForDay = (date) => {
+        return events.filter(event => {
+            const eventDate = moment(event.eventStart);
+            return eventDate.isSame(date, 'day');
+        });
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
+    const days = getDaysInMonth();
+    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
         <div className="calendar-container">
-            <h2>Your Calendar</h2>
-            
-            {/* Back to Home Button */}
-            <div className="back-home-button">
+            <div className="back-button">
                 <Link to="/home">
                     <button>Back to Home</button>
                 </Link>
             </div>
-
-            <div className="calendar-navigation">
-                <button onClick={goToPrevWeek}>&lt; Prev Week</button>
-                <span className="current-week">{currentWeek.format('MMMM Do YYYY')}</span>
-                <button onClick={goToNextWeek}>Next Week &gt;</button>
+            <div className="calendar-header">
+                <button 
+                    className="nav-button"
+                    onClick={() => setCurrentDate(prev => prev.clone().subtract(1, 'month'))}
+                >
+                    Previous
+                </button>
+                <h2 className="calendar-title">
+                    {currentDate.format('MMMM YYYY')}
+                </h2>
+                <button 
+                    className="nav-button"
+                    onClick={() => setCurrentDate(prev => prev.clone().add(1, 'month'))}
+                >
+                    Next
+                </button>
             </div>
-            
-            {/* Add Event Button */}
-            <div className="add-event-button">
-                <Link to="/add-event">
-                    <button>Add Event</button>
-                </Link>
+
+            <div className="calendar-grid">
+                {weekDays.map(day => (
+                    <div key={day} className="calendar-day-header">
+                        {day}
+                    </div>
+                ))}
+                
+                {days.map(day => (
+                    <div 
+                        key={day.format('YYYY-MM-DD')} 
+                        className={`calendar-day ${day.isSame(moment(), 'day') ? 'today' : ''}`}
+                    >
+                        <span className="day-number">{day.format('D')}</span>
+                        <div className="event-list">
+                            {getEventsForDay(day).map(event => (
+                                <div key={event.eventID} className="event">
+                                    <div className="event-name">{event.eventName}</div>
+                                    <div className="event-time">
+                                        {moment(event.eventStart).format('h:mm A')}
+                                    </div>
+                                    <button
+                                        className="delete-button"
+                                        onClick={() => handleDeleteEvent(event.eventID)}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
             </div>
 
-            {/* Display Loading or Events */}
-            <div className="calendar-events">
-                {loading ? (
-                    <p className="loading">Loading events...</p>
-                ) : error ? (
-                    <p className="error">Error: {error}</p>
-                ) : (
-                    weekDays.map(day => {
-                        const formattedDay = day.format('YYYY-MM-DD');
-                        const dayEvents = eventsByDay[formattedDay] || [];
-
-                        return (
-                            <div key={formattedDay} className="calendar-day">
-                                <h3>{day.format('dddd, MMMM Do YYYY')}</h3>
-                                {dayEvents.length === 0 ? (
-                                    <p>No events</p>
-                                ) : (
-                                    dayEvents.map(event => (
-                                        <div key={event.eventID} className="calendar-event">
-                                            <span className="event-name">{event.eventName}</span>
-                                            <span className="event-time">
-                                                {moment(event.eventStart).tz('America/Toronto').format('YYYY-MM-DD HH:mm')}  {/* Converts to Eastern Time Zone */}
-                                            </span>
-                                            <span className="event-duration">
-                                                Duration: {eventDuration(event.eventDuration)}
-                                            </span>
-                                            <p className="event-description">{event.eventDescription}</p>
-                                            <button
-                                                className="delete-button"
-                                                onClick={() => handleDeleteEvent(event.eventID, !!event.courseCode)}  
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        );
-                    })
-                )}
-            </div>
+            <Link to="/add-event">
+                <button className="add-event-button">Add Event</button>
+            </Link>
         </div>
     );
 };

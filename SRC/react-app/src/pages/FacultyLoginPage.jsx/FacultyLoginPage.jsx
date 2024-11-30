@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AuthService from '../../services/AuthService'; // AuthService for authentication
+import { UserContext } from '../../context/UserContext';
+import AuthService from '../../services/AuthService';
 import './FacultyLoginPage.css';
 
 const FacultyLoginPage = () => {
@@ -8,15 +9,21 @@ const FacultyLoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useContext(UserContext);
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
         try {
-            // Call AuthService to log in
             const response = await AuthService.faculty_login(email, password);
             if (response.success) {
-                navigate('/home'); // Redirect to the dashboard or home page
+                const userData = {
+                    email: email,
+                    role: 'Faculty',
+                    id: AuthService.getCurrentUserId()
+                };
+                login(userData);
+                navigate('/home');
             } else {
                 setError(response.message || 'Login failed. Please try again.');
             }
