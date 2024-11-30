@@ -12,13 +12,29 @@ routes = Blueprint('routes', __name__)
 # Initialize the DB connection with environment variables
 db = DBConnection(
     host=os.getenv("HOST"),
-    user=os.getenv("USER"),
+    user='root',
     password=os.getenv("PASSWORD"),
     database=os.getenv("DATABASE")
 )
 
 # Secret key for JWT (kept for potential future use)
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
+
+# Example route (now unprotected)
+@routes.route('/api/example', methods=['GET'])
+def get_data():
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Student WHERE studentId = 10")
+    result = cursor.fetchall()
+
+    cursor.close()
+    db.close_connection()
+
+    return jsonify(result)
 
 # Login route (unchanged)
 @routes.route('/api/login', methods=['POST'])
@@ -58,21 +74,112 @@ def login():
     )
     return jsonify({"token": token, "message": "Login successful!"}), 200
 
-# Example route (now unprotected)
-@routes.route('/api/example', methods=['GET'])
-def get_data():
+# Faculty Member Login route
+# TESTING ID: 6, PASSWORD LBp9F7jQ, EMAIL: faculty6@example.com
+@routes.route('/api/faculty/login', methods=['POST'])
+def faculty_login():
     conn = db.get_connection()
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Student WHERE studentId = 10")
-    result = cursor.fetchall()
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    # Query to validate user credentials
+    query = "SELECT * FROM FacultyMember WHERE email = %s AND password = %s"
+    cursor.execute(query, (email, password))
+    user = cursor.fetchone()
 
     cursor.close()
     db.close_connection()
 
+    if not user:
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    # Generate token
+    token = jwt.encode(
+        {
+            "user_id": user["facultyID"],
+            "role": "Faculty",
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+    return jsonify({"token": token, "message": "Faculty Login successful!"}), 200
+
+# Get a course for the student
+@routes.route('/api/student/search', methods=['GET'])
+def get_student_search(): 
+    search = request.args.get('search')  # Capture 'search' from query parameters
+    if not search:
+        return jsonify({"error": "Missing 'search' parameter"}), 400
+    
+    conn = db.get_connection()
+    if conn is None: 
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT * 
+        FROM CourseDetails
+        WHERE courseName like %s OR courseCode like %s
+        """
+        cursor.execute(query, (search, search))
+        result = cursor.fetchall()
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+    if not result:
+        return jsonify({"error": "Could not find any course."}), 404
+
     return jsonify(result)
+
+# Get a course for the student
+@routes.route('/api/student/view-course', methods=['GET'])
+def get_courses(): 
+    studentID = request.args.get('studentID')
+    if not studentID:
+        return jsonify({"error": "Missing 'search' parameter"}), 400
+    
+    conn = db.get_connection()
+    if conn is None: 
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT sc.courseCode, sc.cyear, sc.grade, c.courseName, c.courseDescription, c.credits
+        FROM StudentCourse sc
+        JOIN CourseDetails c ON sc.courseCode = c.courseCode
+        WHERE sc.studentID = %s;
+        """
+        cursor.execute(query, (studentID,))
+        result = cursor.fetchall()
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+    if not result:
+        return jsonify({"error": "Could not find any course."}), 404
+
+    return jsonify(result)
+
+@routes.route('/api/student/register', methods=['POST'])
+def course_register():
+    return
+
 
 # Get calendar events (now unprotected)
 @routes.route('/api/events/<int:student_id>', methods=['GET'])

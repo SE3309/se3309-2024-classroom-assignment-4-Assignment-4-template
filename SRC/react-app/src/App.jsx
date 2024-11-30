@@ -8,6 +8,7 @@ import Example from './pages/Example/Example';
 import LaunchPage from './pages/LaunchPage/LaunchPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header/Header';
+import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
 
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
                 {/* Public Routes */}
                 <Route path="/" element={<LaunchPage />} />
                 <Route path="/student-login" element={<StudentLoginPage />} />
+                <Route path="/faculty-login" element={<FacultyLoginPage />} />
 
                 {/* Protected Routes */}
                 <Route
