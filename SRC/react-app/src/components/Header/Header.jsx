@@ -1,15 +1,17 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Header.css'; // Optional for styles
-import AuthService from '../../services/AuthService'; // AuthService for authentication
+import { useContext } from 'react';
+import { UserContext } from '../../context/UserContext';
+import './Header.css';
+import AuthService from '../../services/AuthService';
 
 const Header = () => {
     const navigate = useNavigate();
+    const { logout } = useContext(UserContext);
 
     const handleLogout = () => {
-        // Clear user session (localStorage or other storage)
-       AuthService.logout()
-        navigate('/'); 
+        AuthService.logout();
+        logout();
+        navigate('/');
     };
 
     return (

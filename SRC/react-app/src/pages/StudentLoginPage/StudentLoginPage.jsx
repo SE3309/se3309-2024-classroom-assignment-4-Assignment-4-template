@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AuthService from '../../services/AuthService'; // AuthService for authentication
+import { UserContext } from '../../context/UserContext';
+import AuthService from '../../services/AuthService';
 import './StudentLoginPage.css';
 
 const StudentLoginPage = () => {
@@ -8,15 +9,19 @@ const StudentLoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useContext(UserContext);
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
         try {
-            // Call AuthService to log in
             const response = await AuthService.login(email, password);
             if (response.success) {
-                navigate('/home'); // Redirect to the dashboard or home page
+                login({
+                    ...response.user,
+                    role: 'Student'
+                });
+                navigate('/home');
             } else {
                 setError(response.message || 'Login failed. Please try again.');
             }

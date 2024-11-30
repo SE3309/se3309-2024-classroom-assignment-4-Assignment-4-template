@@ -2,21 +2,34 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .logout-button {
-    background-color: #ff4d4d;
+    background-color: var(--danger-color);
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.9rem;
+    transition: opacity 0.3s ease;
 }
 
 .logout-button:hover {
-    background-color: #ff3333;
+    opacity: 0.9;
 }

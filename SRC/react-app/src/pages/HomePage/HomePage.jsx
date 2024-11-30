@@ -1,34 +1,58 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importing useNavigate from react-router-dom
-import './HomePage.css'; // Optional for styling
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../context/UserContext';
+import './HomePage.css';
 
 const HomePage = () => {
-    // Simulating a logged-in user for demo purposes
-    const [user] = useState({ email: 'student@example.com' }); // Replace with actual user data
-    const navigate = useNavigate(); // Hook for navigating to different pages
+    const { user } = useContext(UserContext);
+    const navigate = useNavigate();
 
     const handleActionClick = (action) => {
         alert(`Action: ${action}`);
     };
 
     const handleViewCalendar = () => {
-        navigate('/view-calendar'); // Navigate to the calendar page
+        navigate('/view-calendar');
+    };
+
+    const handleViewTranscript = () => {
+        navigate('/transcript');
     };
 
     return (
         <div className="home-container">
-            <h2 className="welcome-message">Welcome, {user.email}</h2>
-            <p className="status-message">You are logged in as a Student!</p>
+            <div className="welcome-header">
+                <h1 className="welcome-message">Welcome Back!</h1>
+                <h2 className="user-email">{user?.fullName}</h2>
+                <p className="status-message">{user?.role} Portal</p>
+            </div>
+            
             <div className="home-content">
-                {/* Student-specific Actions */}
-                <button className="action-button" onClick={() => handleActionClick('Course Search')}>Search for Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('View Courses')}>View Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('Register/Unregister for Courses')}>Register/Unregister for Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('View Transcript')}>View Transcript</button>
+                <div className="action-section">
+                    <h3 className="section-title">Course Management</h3>
+                    <button className="action-button" onClick={() => handleActionClick('Course Search')}>
+                        Search Courses
+                    </button>
+                    <button className="action-button" onClick={() => handleActionClick('View Courses')}>
+                        View My Courses
+                    </button>
+                    <button className="action-button" onClick={() => handleActionClick('Register/Unregister for Courses')}>
+                        Course Registration
+                    </button>
+                    <button className="action-button" onClick={handleViewTranscript}>
+                        Academic Transcript
+                    </button>
+                </div>
 
-                {/* Calendar Group for Students */}
-                <button className="action-button" onClick={handleViewCalendar}>View Calendar</button>
-                <button className="action-button" onClick={() => handleActionClick('Add/Remove Item to/from Calendar')}>Manage Calendar (Add/Remove)</button>
+                <div className="action-section">
+                    <h3 className="section-title">Calendar</h3>
+                    <button className="action-button" onClick={handleViewCalendar}>
+                        View Calendar
+                    </button>
+                    <button className="action-button" onClick={() => navigate('/add-event')}>
+                        Add Calendar Event
+                    </button>
+                </div>
             </div>
         </div>
     );
