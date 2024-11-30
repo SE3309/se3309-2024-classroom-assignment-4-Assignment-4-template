@@ -1,14 +1,16 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import AuthService from '../services/AuthService';
+import React, { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { UserContext } from '../context/UserContext';
 
 const ProtectedRoute = ({ children }) => {
-    if (!AuthService.isAuthenticated()) {
-        alert("You are not authenticated")
+    const { user } = useContext(UserContext);
+
+    if (!user) {
         return <Navigate to="/" replace />;
     }
+    
     return children;
 };
 

@@ -1,23 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
-import AuthService from "../../services/AuthService";
+import { UserContext } from '../../context/UserContext';
 import "./TranscriptPage.css";
 
 const TranscriptPage = () => {
     const [transcript, setTranscript] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { user } = useContext(UserContext);
 
     useEffect(() => {
         const fetchTranscript = async () => {
             try {
-                const studentId = AuthService.getCurrentUserId();
-                if (!studentId) {
+                if (!user?.studentID) {
                     throw new Error("No authenticated user found");
                 }
 
                 const response = await fetch(
-                    `http://localhost:5000/api/transcript/${studentId}`
+                    `http://localhost:5000/api/transcript/${user.studentID}`
                 );
 
                 if (!response.ok) {
@@ -25,46 +25,64 @@ const TranscriptPage = () => {
                 }
 
                 const data = await response.json();
-                setTranscript(data);
+                console.log("Transcript data:", data);
+
+                // Group courses by year
+                const groupedCourses = data.courses.reduce((acc, course) => {
+                    if (!acc[course.cyear]) {
+                        acc[course.cyear] = [];
+                    }
+                    acc[course.cyear].push(course);
+                    return acc;
+                }, {});
+
+                setTranscript({
+                    ...data,
+                    groupedCourses
+                });
             } catch (err) {
+                console.error("Transcript fetch error:", err);
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchTranscript();
-    }, []);
-
-    if (loading) return <div className="transcript-container">Loading...</div>;
-    if (error) return <div className="transcript-container">Error: {error}</div>;
-    if (!transcript) return <div className="transcript-container">No transcript data available</div>;
-
-    // Group courses by year
-    const coursesByYear = transcript.courses.reduce((acc, course) => {
-        if (!acc[course.cyear]) {
-            acc[course.cyear] = [];
+        if (user) {
+            fetchTranscript();
         }
-        acc[course.cyear].push(course);
-        return acc;
-    }, {});
+    }, [user]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!transcript) return <div>No transcript data available</div>;
 
     return (
         <div className="transcript-container">
-            <h2>Academic Transcript</h2>
-
-            <div className="transcript-summary">
-                <h3>Academic Summary</h3>
-                <p>Cumulative GPA: {transcript.gpa.toFixed(2)}</p>
-                <p>Total Credits Completed: {transcript.totalCredits}</p>
+            <div className="back-button">
+                <Link to="/home">
+                    <button>Back to Home</button>
+                </Link>
             </div>
 
-            <div className="transcript-courses">
-                {Object.entries(coursesByYear)
-                    .sort(([yearA], [yearB]) => yearB - yearA) // Sort years in descending order
+            <h2>Academic Transcript</h2>
+
+            <div className="student-info">
+                <h3>Student Information</h3>
+                <p><strong>Student ID:</strong> {user.studentID}</p>
+                <p><strong>Name:</strong> {user.fullName}</p>
+                <p><strong>Program:</strong> {user.program}</p>
+                <p><strong>Overall GPA:</strong> {transcript.gpa.toFixed(2)}</p>
+                <p><strong>Total Credits:</strong> {transcript.totalCredits}</p>
+            </div>
+
+            <div className="academic-records">
+                {Object.entries(transcript.groupedCourses)
+                    .sort(([yearA], [yearB]) => yearA - yearB)
+                    .filter(([year]) => year >= 2024 && year <= 2026)
                     .map(([year, courses]) => (
                         <div key={year} className="academic-year">
-                            <h3>Year {year}</h3>
+                            <h3>Academic Year {year}</h3>
                             <table>
                                 <thead>
                                     <tr>
@@ -75,26 +93,18 @@ const TranscriptPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {courses.map((course, index) => (
-                                        <tr key={index}>
+                                    {courses.map((course) => (
+                                        <tr key={`${course.courseCode}-${year}`}>
                                             <td>{course.courseCode}</td>
-                                            <td title={course.courseDescription}>
-                                                {course.courseName}
-                                            </td>
+                                            <td>{course.courseName}</td>
                                             <td>{course.credits}</td>
-                                            <td>{course.grade || 'N/A'}</td>
+                                            <td>{course.grade}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
                     ))}
-            </div>
-
-            <div className="back-button">
-                <Link to="/home">
-                    <button>Back to Home</button>
-                </Link>
             </div>
         </div>
     );

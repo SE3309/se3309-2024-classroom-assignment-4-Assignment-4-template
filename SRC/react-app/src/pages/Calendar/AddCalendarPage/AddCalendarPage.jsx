@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../../context/UserContext';
 import './AddCalendarPage.css';
 
 const AddCalendarPage = () => {
@@ -7,25 +8,22 @@ const AddCalendarPage = () => {
     const [eventDescription, setEventDescription] = useState('');
     const [eventStart, setEventStart] = useState('');
     const [eventDuration, setEventDuration] = useState('');
-    const [error, setError] = useState(null); // To handle errors
-
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { user } = useContext(UserContext);
 
     const handleAddEvent = async () => {
         try {
-            // Construct the event object
             const newEvent = {
                 eventName,
                 eventDescription,
                 eventStart,
                 eventDuration,
-                studentId:1,
-                cyear:null,
-                courseCode:null,
-
+                studentId: user.id,
+                cyear: null,
+                courseCode: null,
             };
 
-            // Call the backend API to insert the event
             const response = await fetch('http://localhost:5000/api/events', {
                 method: 'POST',
                 headers: {
@@ -34,14 +32,12 @@ const AddCalendarPage = () => {
                 body: JSON.stringify(newEvent),
             });
 
-            // Check for errors in the response
             if (!response.ok) {
                 throw new Error('Failed to add the event');
             }
 
             console.log('Event successfully added:', newEvent);
 
-            // Redirect back to the calendar page
             navigate('/view-calendar');
         } catch (error) {
             console.error('Error adding event:', error);
@@ -90,10 +86,8 @@ const AddCalendarPage = () => {
                 <button type="button" onClick={handleAddEvent}>Add Event</button>
             </form>
 
-            {/* Display error message if any */}
             {error && <div className="error-message">{error}</div>}
 
-            {/* Back Button */}
             <div className="back-button">
                 <button onClick={() => navigate('/view-calendar')}>Back to Calendar</button>
             </div>

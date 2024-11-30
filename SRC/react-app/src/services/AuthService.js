@@ -13,8 +13,13 @@ const AuthService = {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token); // Store token in localStorage
-      return { success: true };
+      localStorage.setItem("token", data.token);
+      
+      return { 
+        success: true, 
+        user: data.user,
+        token: data.token
+      };
     } catch (err) {
       return { success: false, message: err.message };
     }
@@ -34,8 +39,13 @@ const AuthService = {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token); // Store token in localStorage
-      return { success: true };
+      localStorage.setItem("token", data.token);
+      
+      return { 
+        success: true, 
+        user: data.user,
+        token: data.token
+      };
     } catch (err) {
       return { success: false, message: err.message };
     }
@@ -46,7 +56,7 @@ const AuthService = {
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem("token"); // Check for a token
+    return !!localStorage.getItem("token");
   },
 
   getCurrentUserId: () => {
@@ -54,9 +64,7 @@ const AuthService = {
     if (!token) return null;
     
     try {
-      // JWT tokens are base64 encoded with 3 parts: header.payload.signature
       const payload = token.split(".")[1];
-      // Decode the base64 payload
       const decoded = JSON.parse(atob(payload));
       return decoded.user_id;
     } catch (error) {

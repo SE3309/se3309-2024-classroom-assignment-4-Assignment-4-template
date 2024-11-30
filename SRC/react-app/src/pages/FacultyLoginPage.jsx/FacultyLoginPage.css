@@ -2,49 +2,70 @@
 .faculty-login-page {
     max-width: 400px;
     margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
+    padding: 30px;
     border-radius: 8px;
-    background-color: #f9f9f9;
-    text-align: center;
+    background-color: var(--background-dark);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 80px;
 }
 
 .faculty-login-page h2 {
-    margin-bottom: 20px;
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    font-size: 1.8em;
 }
 
 .form-group {
-    margin-bottom: 15px;
-    text-align: left;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
+    padding: 12px;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
+    background-color: var(--background-light);
+    color: var(--text-primary);
+    font-size: 1em;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 
 .error {
-    color: red;
-    font-size: 14px;
-    margin-bottom: 15px;
+    color: var(--danger-color);
+    font-size: 0.9em;
+    margin: 15px 0;
+    text-align: center;
+    background-color: rgba(220, 53, 69, 0.1);
+    padding: 8px;
+    border-radius: 4px;
 }
 
-button {
-    padding: 10px 20px;
-    background-color: #007bff;
+.faculty-login-page button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--success-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #0056b3;
+.faculty-login-page button:hover {
+    background-color: #218838;
 }

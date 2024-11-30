@@ -4,7 +4,8 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f4;
+    background-color: var(--background-light);
+    color: var(--text-primary);
 }
 
 .launch-buttons {
@@ -14,28 +15,25 @@
 }
 
 .launch-button {
-    padding: 10px 20px;
-    font-size: 18px;
+    padding: 12px 24px;
+    font-size: 1.1rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .launch-button.student {
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
-}
-
-.launch-button.student:hover {
-    background-color: #0056b3;
 }
 
 .launch-button.faculty {
-    background-color: #28a745;
+    background-color: var(--success-color);
     color: white;
 }
 
-.launch-button.faculty:hover {
-    background-color: #1e7e34;
+.launch-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
