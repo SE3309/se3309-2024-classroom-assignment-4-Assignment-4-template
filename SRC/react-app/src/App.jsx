@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage';
 import StudentLoginPage from './pages/StudentLoginPage/StudentLoginPage';
@@ -9,6 +8,7 @@ import LaunchPage from './pages/LaunchPage/LaunchPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header/Header';
 import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
+import TranscriptPage from './pages/Transcript/TranscriptPage';
 
 
 const App = () => {
@@ -61,6 +61,17 @@ const App = () => {
                             <>
                                 <Header />
                                 <Example />
+                            </>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/transcript"
+                    element={
+                        <ProtectedRoute>
+                            <>
+                                <Header />
+                                <TranscriptPage />
                             </>
                         </ProtectedRoute>
                     }

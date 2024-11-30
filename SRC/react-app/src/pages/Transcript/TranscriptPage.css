@@ -1,0 +1,84 @@
+.transcript-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.transcript-container h2 {
+  text-align: center;
+  color: #000000;
+  margin-bottom: 30px;
+}
+
+.transcript-summary {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.transcript-summary h3 {
+  color: #000000;
+  margin-bottom: 15px;
+}
+
+.academic-year {
+  margin: 30px 0;
+}
+
+.academic-year h3 {
+  color: #000000;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.transcript-courses table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: #fff;
+  color: #000000;
+}
+
+.transcript-courses th,
+.transcript-courses td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+  color: #000000;
+}
+
+.transcript-courses th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #000000;
+}
+
+.transcript-courses tr:hover {
+  background-color: #f8f9fa;
+}
+
+.back-button {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.back-button button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button button:hover {
+  background-color: #0056b3;
+}

@@ -275,3 +275,72 @@ def delete_calendar_event(event_id):
         db.close_connection()
 
     return jsonify({"message": "Event deleted successfully!"}), 200
+
+@routes.route('/api/transcript/<int:student_id>', methods=['GET'])
+def get_transcript(student_id):
+    print("\n=== Starting Transcript Request ===")
+    print(f"Requesting transcript for student ID: {student_id}")
+    
+    conn = db.get_connection()
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT sc.courseCode, sc.cyear, sc.grade, 
+               cd.courseName, cd.courseDescription, cd.credits
+        FROM StudentCourse sc
+        JOIN CourseDetails cd ON sc.courseCode = cd.courseCode
+        WHERE sc.studentID = %s
+        ORDER BY sc.cyear DESC, sc.courseCode
+        """
+        print(f"Executing query for student courses...")
+        cursor.execute(query, (student_id,))
+        courses = cursor.fetchall()
+        print(f"Found {len(courses)} courses for student")
+
+        # Calculate GPA and total credits
+        total_credits = 0
+        total_grade_points = 0
+        grade_points = {'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+                       'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+                       'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+                       'D+': 1.3, 'D': 1.0, 'F': 0.0}
+
+        print("\nCalculating GPA...")
+        for course in courses:
+            print(f"Processing course: {course['courseCode']} - Grade: {course['grade']}")
+            if course['grade'] in grade_points:
+                credits = float(course['credits'])
+                total_credits += credits
+                grade_point = grade_points[course['grade']]
+                course_points = credits * grade_point
+                total_grade_points += course_points
+                print(f"  Credits: {credits}, Grade Points: {grade_point}, Course Points: {course_points}")
+
+        gpa = round(total_grade_points / total_credits, 2) if total_credits > 0 else 0.0
+        print(f"\nFinal calculations:")
+        print(f"Total Credits: {total_credits}")
+        print(f"Total Grade Points: {total_grade_points}")
+        print(f"GPA: {gpa}")
+
+        response_data = {
+            "courses": courses,
+            "gpa": gpa,
+            "totalCredits": total_credits
+        }
+        print("\n=== Completing Transcript Request Successfully ===")
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"\nError in transcript processing:")
+        print(f"Exception type: {type(e).__name__}")
+        print(f"Exception message: {str(e)}")
+        print(f"=== Transcript Request Failed ===")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")

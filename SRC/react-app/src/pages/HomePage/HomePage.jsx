@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Importing useNavigate from react-router-dom
 import './HomePage.css'; // Optional for styling
 
@@ -15,6 +15,10 @@ const HomePage = () => {
         navigate('/view-calendar'); // Navigate to the calendar page
     };
 
+    const handleViewTranscript = () => {
+        navigate('/transcript');
+    };
+
     return (
         <div className="home-container">
             <h2 className="welcome-message">Welcome, {user.email}</h2>
@@ -24,7 +28,7 @@ const HomePage = () => {
                 <button className="action-button" onClick={() => handleActionClick('Course Search')}>Search for Courses</button>
                 <button className="action-button" onClick={() => handleActionClick('View Courses')}>View Courses</button>
                 <button className="action-button" onClick={() => handleActionClick('Register/Unregister for Courses')}>Register/Unregister for Courses</button>
-                <button className="action-button" onClick={() => handleActionClick('View Transcript')}>View Transcript</button>
+                <button className="action-button" onClick={handleViewTranscript}>View Transcript</button>
 
                 {/* Calendar Group for Students */}
                 <button className="action-button" onClick={handleViewCalendar}>View Calendar</button>
