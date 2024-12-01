@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import EmergencyContactCard from "../components/EmergencyContactCard/EmergencyContactCard";
 import AddContactModal from "../components/AddContactModal/AddContactModal";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
 
 const ManageEmergencyContactsModal = ({
   isOpen,
@@ -11,6 +12,8 @@ const ManageEmergencyContactsModal = ({
 }) => {
   const [localContacts, setLocalContacts] = useState(emergencyContacts);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
+  const [allContacts, setAllContacts] = useState([]);
+
 
   //Synchronize localContacts with emergencyContacts whenever the modal opens or the emergencyContacts prop changes
   useEffect(() => {
@@ -18,6 +21,21 @@ const ManageEmergencyContactsModal = ({
       setLocalContacts(emergencyContacts);
     }
   }, [isOpen, emergencyContacts]);
+
+  //Fetch all existing contacts to check if the user creates a contact with a phone number that already exists
+  const fetchAllContacts = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/contacts");
+      setAllContacts(response.data);
+    } catch (error) {
+      console.error("Error fetching all contacts: ", error.response?.data || error.message);
+    }
+  };
+  
+  useEffect(() => {
+    fetchAllContacts();
+  }, []);
+  
 
   //Add a new contact locally
   const handleAddContact = (newContact) => {
@@ -111,7 +129,7 @@ const ManageEmergencyContactsModal = ({
         isOpen={isAddContactModalOpen}
         onClose={() => setIsAddContactModalOpen(false)}
         onSave={handleAddContact}
-        existingContacts={localContacts} //fix this!
+        existingContacts={allContacts}
       />
     </>
   );

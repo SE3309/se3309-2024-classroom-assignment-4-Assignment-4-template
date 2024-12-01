@@ -845,3 +845,21 @@ def add_emergency_contact():
     finally:
         cursor.close()
         db.close_connection()
+
+@routes.route('/api/contacts', methods=['GET'])
+def get_all_contacts():
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT phoneNumber, cName AS contactName, address, postalCode FROM Contact"
+        cursor.execute(query)
+        contacts = cursor.fetchall()
+        return jsonify(contacts), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()

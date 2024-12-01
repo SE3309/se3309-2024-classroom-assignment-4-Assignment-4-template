@@ -17,13 +17,35 @@ const AddContactModal = ({ isOpen, onClose, onSave, existingContacts }) => {
       alert("Phone number is required.");
       return;
     }
-    if (existingContacts.some((contact) => contact.phoneNumber === formData.phoneNumber)) {
-      alert("A contact with this phone number already exists.");
-      return;
-    }
+  
+    // Check for duplicate phone numbers
+    const matchingContact = existingContacts.find(
+      (contact) => contact.phoneNumber === formData.phoneNumber
+    );
+  
+    if (matchingContact) {
+        // Prompt user with options
+        const action = window.confirm(
+          `A contact with this phone number already exists. Do you want to import the existing contact? (Click "OK" to import or "Cancel" to overwrite.)`
+        );
+  
+        if (action) {
+          // Import existing contact
+          onSave(matchingContact);
+        } else {
+          // Overwrite existing contact locally
+          onSave(formData);
+        }
+      } else {
+        // Save the new contact if no match is found
+        onSave(formData);
+      }
+  
+    // Proceed with saving the contact
     onSave(formData);
     onClose();
   };
+  
 
   if (!isOpen) return null;
 
