@@ -789,3 +789,66 @@ def delete_emergency_contact():
         cursor.close()
         db.close_connection()
 
+@routes.route('/api/faculty/<int:faculty_id>/courses', methods=['GET'])
+def get_faculty_courses(faculty_id):
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # SQL query to fetch courses taught by a faculty member
+        query = """
+        SELECT 
+            c.courseCode,
+            cd.courseName,
+            cd.courseDescription,
+            cd.credits,
+            c.cyear AS academicYear,
+            d.departmentName AS department
+        FROM 
+            Course c
+        INNER JOIN 
+            CourseDetails cd ON c.courseCode = cd.courseCode
+        INNER JOIN 
+            FacultyMember f ON c.instructor = f.facultyID
+        LEFT JOIN 
+            Department d ON f.departmentID = d.departmentID
+        WHERE 
+            f.facultyID = %s
+        ORDER BY 
+            c.cyear
+        """
+        cursor.execute(query, (faculty_id,))
+
+        # Fetch results
+        rows = cursor.fetchall()
+
+        # Group courses by academic year
+        courses_by_year = {}
+        for row in rows:
+            year = row["academicYear"]
+            if year not in courses_by_year:
+                courses_by_year[year] = []
+            courses_by_year[year].append({
+                "courseCode": row["courseCode"],
+                "courseName": row["courseName"],
+                "courseDescription": row.get("courseDescription"),
+                "credits": float(row["credits"]),
+                "department": row.get("department")
+            })
+
+        # Prepare the response
+        response = {
+            "facultyID": faculty_id,
+            "courses": courses_by_year
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()

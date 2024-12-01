@@ -10,6 +10,7 @@ import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
 import SearchCourse from './pages/SearchCourse/SearchCourse';
 import TranscriptPage from './pages/Transcript/TranscriptPage';
 import CourseView from './pages/CourseView/CourseView';
+import CourseViewInstructor from './pages/CourseViewInstructor/CourseViewInstructor';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ManageStudentsPage from "./pages/ManageStudents/ManageStudentsPage";
 
@@ -96,6 +97,17 @@ const App = () => {
                 <>
                   <Header />
                   <TranscriptPage />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course-view-instructor"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Header />
+                  <CourseViewInstructor />
                 </>
               </ProtectedRoute>
             }
