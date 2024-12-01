@@ -789,46 +789,66 @@ def delete_emergency_contact():
         cursor.close()
         db.close_connection()
 
-@routes.route('/api/faculty/courses', methods=['GET'])
-def get_faculty_courses():
-    print("\n=== Starting Get Faculty Courses Request ===")
+@routes.route('/api/faculty/<int:faculty_id>/courses', methods=['GET'])
+def get_faculty_courses(faculty_id):
     conn = db.get_connection()
     if conn is None:
-        print("Error: Database connection failed")
         return jsonify({"error": "Database connection failed"}), 500
-
-    faculty_id = request.args.get('facultyID')
-    print(f"Fetching courses for faculty ID: {faculty_id}")
-    
-    if not faculty_id:
-        print("Error: Missing faculty ID")
-        return jsonify({"error": "Faculty ID is required"}), 400
 
     try:
         cursor = conn.cursor(dictionary=True)
-        
+
+        # SQL query to fetch courses taught by a faculty member
         query = """
-        SELECT c.courseCode, c.cyear, c.instructor, 
-               cd.courseName, cd.courseDescription, cd.credits
-        FROM Course c
-        JOIN CourseDetails cd ON c.courseCode = cd.courseCode
-        WHERE c.instructor = %s
-        ORDER BY c.cyear DESC, c.courseCode
+        SELECT 
+            c.courseCode,
+            cd.courseName,
+            cd.courseDescription,
+            cd.credits,
+            c.cyear AS academicYear,
+            d.departmentName AS department
+        FROM 
+            Course c
+        INNER JOIN 
+            CourseDetails cd ON c.courseCode = cd.courseCode
+        INNER JOIN 
+            FacultyMember f ON c.instructor = f.facultyID
+        LEFT JOIN 
+            Department d ON f.departmentID = d.departmentID
+        WHERE 
+            f.facultyID = %s
+        ORDER BY 
+            c.cyear
         """
-        
-        print(f"Executing query: {query}")
         cursor.execute(query, (faculty_id,))
-        courses = cursor.fetchall()
-        print(f"Found {len(courses)} courses for faculty")
-        
-        print("=== Faculty Courses Request Completed Successfully ===\n")
-        return jsonify(courses), 200
+
+        # Fetch results
+        rows = cursor.fetchall()
+
+        # Group courses by academic year
+        courses_by_year = {}
+        for row in rows:
+            year = row["academicYear"]
+            if year not in courses_by_year:
+                courses_by_year[year] = []
+            courses_by_year[year].append({
+                "courseCode": row["courseCode"],
+                "courseName": row["courseName"],
+                "courseDescription": row.get("courseDescription"),
+                "credits": float(row["credits"]),
+                "department": row.get("department")
+            })
+
+        # Prepare the response
+        response = {
+            "facultyID": faculty_id,
+            "courses": courses_by_year
+        }
+
+        return jsonify(response), 200
 
     except Exception as e:
-        print(f"Error: Failed to fetch courses - {str(e)}")
-        print("=== Faculty Courses Request Failed ===\n")
-        return jsonify({"error": f"Failed to fetch courses: {str(e)}"}), 500
-
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     finally:
         cursor.close()
         db.close_connection()
