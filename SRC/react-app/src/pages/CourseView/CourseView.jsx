@@ -97,7 +97,7 @@ function CourseView() {
                 </ul>
                 </>
             ) : (
-            <p style={{ alignContent: 'center', width: '50%'}}>There were no results for this studentID.</p>
+            <p style={{ width: '50%'}}>There were no results for this studentID.</p>
         )
     ) : (
         <p>Search using your studentID to see your courses.</p>
