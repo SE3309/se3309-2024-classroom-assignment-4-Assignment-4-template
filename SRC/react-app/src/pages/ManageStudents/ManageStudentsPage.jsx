@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import StudentCard from "../../components/StudentCard/StudentCard.jsx";
 import ViewStudentModal from "../../components/ViewStudentModal/ViewStudentModal.jsx";
@@ -94,7 +94,7 @@ const ManageStudentsPage = () => {
       });
       setStudents(response.data);
     } catch (error) {
-      console.error("Error fetching students");
+      console.error("Error fetching students: " + error);
       setStudents([]); // Display no results
     }
   };
