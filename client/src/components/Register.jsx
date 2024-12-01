@@ -29,6 +29,7 @@ function Register() {
         setSuccess("");
       }
     } catch (err) {
+      console.log(err);
       setError("An error occurred. Please try again.");
       setSuccess("");
     }
