@@ -20,7 +20,7 @@ const ModifyCourse = () => {
     const fetchCourses = async () => {
         try {
             console.log("Fetching courses for faculty ID:", user.facultyID); // Debug log
-            const response = await fetch(`http://localhost:5000/api/faculty/${user.facultyID}/courses`);
+            const response = await fetch(`http://127.0.0.1:5000/api/faculty/${user.facultyID}/courses`);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to fetch courses');

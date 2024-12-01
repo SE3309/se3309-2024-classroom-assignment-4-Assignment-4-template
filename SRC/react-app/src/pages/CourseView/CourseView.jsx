@@ -25,7 +25,7 @@ function CourseView() {
         resNo(noOfResults);
         setHasSearched(true) 
         try {
-            const response = await axios.get("/api/student/view-course", {
+            const response = await axios.get('http://127.0.0.1:5000/api/student/view-course', {
                 params: { studentID:search }
             });
 

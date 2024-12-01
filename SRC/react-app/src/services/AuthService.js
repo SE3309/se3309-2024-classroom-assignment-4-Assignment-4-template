@@ -6,15 +6,15 @@ const AuthService = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
+ 
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Login failed");
       }
-
+ 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-
+ 
       return {
         success: true,
         user: data.user,
@@ -24,23 +24,23 @@ const AuthService = {
       return { success: false, message: err.message };
     }
   },
-
-  facultyLogin: async (email, password) => {
+ 
+  faculty_login: async (email, password) => {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/faculty/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
+ 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Faculty login failed");
+        throw new Error(error.message || "Login failed");
       }
-
+ 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-
+ 
       return {
         success: true,
         user: data.user,
@@ -50,19 +50,19 @@ const AuthService = {
       return { success: false, message: err.message };
     }
   },
-
+ 
   logout: () => {
     localStorage.removeItem("token");
   },
-
+ 
   isAuthenticated: () => {
     return !!localStorage.getItem("token");
   },
-
+ 
   getCurrentUserId: () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
-
+ 
     try {
       const payload = token.split(".")[1];
       const decoded = JSON.parse(atob(payload));
@@ -73,5 +73,5 @@ const AuthService = {
     }
   },
 };
-
+ 
 export default AuthService;
