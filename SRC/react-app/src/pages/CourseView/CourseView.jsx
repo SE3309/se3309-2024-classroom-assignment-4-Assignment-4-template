@@ -74,6 +74,7 @@ function CourseView() {
                             <p><strong>Description: </strong>{course.courseDescription}</p>
                             <p><strong>Grade: </strong>{course.grade}</p>
                             <p><strong>Credit: </strong>{course.credits}</p>
+                            <p><strong>Year: </strong>{course.cyear}</p>
                             <button className='toggle-button' onClick={() => toggleMore(course.courseCode, course.cyear)}>
                                 {expandedCourse === course.courseCode ? "VIEW LESS" : "VIEW MORE"}
                             </button>
