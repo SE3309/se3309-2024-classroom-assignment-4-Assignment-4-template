@@ -434,6 +434,61 @@ app.get(
     });
   }
 );
+//cancel bookings for a user
+app.post(
+  "/api/cancel-booking",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { bookingID } = req.body;
+    const { userID } = req.user;
+
+    if (!bookingID) {
+      return res.status(400).json({ success: false, message: "Booking ID is required" });
+    }
+
+    const checkBookingQuery = `
+      SELECT * FROM Booking
+      WHERE bookingID = ? AND userID = ?;
+    `;
+
+    db.query(checkBookingQuery, [bookingID, userID], (err, results) => {
+      if (err) {
+        console.error("Error finding booking:", err);
+        return res.status(500).json({ success: false, message: "Error finding booking" });
+      }
+
+      if (results.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: "Booking not found or you are not authorized to cancel this booking",
+        });
+      }
+
+      const cancelBookingQuery = `
+        UPDATE Booking
+        SET bookingStatus = 'canceled'
+        WHERE bookingID = ?;
+      `;
+
+      db.query(cancelBookingQuery, [bookingID], (err, results) => {
+        if (err) {
+          console.error("Error canceling booking:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Error canceling booking.",
+          });
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "Your booking was successfully canceled!",
+        });
+      });
+    });
+  }
+);
+
+
 
 // set port
 const PORT = process.env.PORT || 3001;
