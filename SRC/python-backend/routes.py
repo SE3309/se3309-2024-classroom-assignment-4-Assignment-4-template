@@ -154,6 +154,8 @@ def get_student_search():
         print("Error: Missing search parameter")
         return jsonify({"error": "Missing 'search' parameter"}), 400
     
+    search = f"%{search.lower()}%"
+    
     conn = db.get_connection()
     if conn is None: 
         print("Error: Database connection failed")
@@ -164,7 +166,7 @@ def get_student_search():
         query = """
         SELECT * 
         FROM CourseDetails
-        WHERE courseName like %s OR courseCode like %s
+        WHERE LOWER(courseName) like %s OR LOWER(courseCode) like %s
         """
         print(f"Executing search query...")
         cursor.execute(query, (search, search))
@@ -228,10 +230,67 @@ def get_courses():
     print("=== View Courses Request Completed Successfully ===\n")
     return jsonify(result)
 
+@routes.route('/api/student/prof-info', methods=['GET'])
+def see_prof(): 
+    print("\n=== Starting Prof Info Request ===")
+    courseCode = request.args.get('courseCode')
+    print(f"Requesting courses for Course Code: {courseCode} and {cyear}")
+    
+    if not courseCode or not cyear:
+        print("Error: Missing courseCode parameter")
+        return jsonify({"error": "Missing 'courseCode' parameter"}), 400
+    
+    try:
+        cyear = int(request.args.get('cyear'))
+    except (TypeError, ValueError):
+        print("Error: Invalid or missing 'cyear' parameter.")
+        return jsonify({"error": "Invalid 'cyear' parameter. It must be a valid integer."}), 400
+    
+    conn = db.get_connection()
+    if conn is None: 
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT 
+            f.fullName AS instructorName,
+            f.officeNo AS instructorOffice,
+            f.contactInfo AS instructorContact,
+            d.departmentName AS departmentName
+        FROM CourseDetails cd
+        JOIN Course c ON cd.courseCode = c.courseCode
+        JOIN FacultyMember f ON f.facultyID = c.instructor
+        JOIN Department d ON f.departmentID = d.departmentID
+        WHERE c.courseCode = %s and c.cyear = %s;
+        """
+        print("Executing query for prof info...")
+        cursor.execute(query, (courseCode, cyear,))
+        result = cursor.fetchall()
+        print(f"Found {len(result)} profs for course")
+    except Exception as e:
+        print(f"Error retrieving courses: {str(e)}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")
+
+    if not result:
+        print(f"No professor information found for courseCode: {courseCode} and cyear: {cyear}")
+        return jsonify({"error": f"No professor information found for courseCode: {courseCode} and cyear: {cyear}"}), 404
+
+    print("=== View Courses Request Completed Successfully ===\n")
+    return jsonify(result)
+
 @routes.route('/api/student/register', methods=['POST'])
 def course_register():
     return
 
+@routes.route('/api/student/unregister', methods=['DELETE'])
+def course_unregister():
+    return
 
 # Get calendar events (now unprotected)
 @routes.route('/api/events/<int:student_id>', methods=['GET'])
