@@ -11,32 +11,21 @@ const AuthService = {
         const error = await response.json();
         throw new Error(error.message || "Login failed");
       }
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
-      }
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         user: data.user,
-        token: data.token
+        token: data.token,
       };
     } catch (err) {
       return { success: false, message: err.message };
     }
   },
 
-  faculty_login: async (email, password) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/faculty/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-  faculty_login: async (email, password) => {
+  facultyLogin: async (email, password) => {
     try {
       const response = await fetch("http://localhost:5000/api/faculty/login", {
         method: "POST",
@@ -46,29 +35,22 @@ const AuthService = {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Login failed");
-      }
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
+        throw new Error(error.message || "Faculty login failed");
       }
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         user: data.user,
-        token: data.token
+        token: data.token,
       };
     } catch (err) {
       return { success: false, message: err.message };
     }
   },
 
-  logout: () => {
-    localStorage.removeItem("token");
-  },
   logout: () => {
     localStorage.removeItem("token");
   },
@@ -80,7 +62,7 @@ const AuthService = {
   getCurrentUserId: () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
-    
+
     try {
       const payload = token.split(".")[1];
       const decoded = JSON.parse(atob(payload));
