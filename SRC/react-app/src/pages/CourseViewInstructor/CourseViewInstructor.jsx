@@ -27,7 +27,6 @@ const CourseViewInstructor = () => {
                 const data = await response.json();
                 console.log("Courses data:", data);
 
-                // Check if 'courses' is an object and contains years
                 if (!data.courses || typeof data.courses !== 'object') {
                     throw new Error("Courses data is in an unexpected format");
                 }
@@ -61,10 +60,9 @@ const CourseViewInstructor = () => {
             <h2>My Courses</h2>
 
             <div className="instructor-info">
-                <h3>Instructor Information</h3>
+                <h3>My Information</h3>
                 <p><strong>Faculty ID:</strong> {user.facultyID}</p>
                 <p><strong>Name:</strong> {user.fullName}</p>
-                <p><strong>Department:</strong> {user.departmentName}</p>
             </div>
 
             <div className="course-records">
@@ -73,24 +71,15 @@ const CourseViewInstructor = () => {
                     .map(([year, courses]) => (
                         <div key={year} className="academic-year">
                             <h3>Academic Year {year}</h3>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Course Code</th>
-                                        <th>Course Name</th>
-                                        <th>Credits</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {courses.map((course) => (
-                                        <tr key={`${course.courseCode}-${year}`}>
-                                            <td>{course.courseCode}</td>
-                                            <td>{course.courseName}</td>
-                                            <td>{course.credits}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <div className="course-cards">
+                                {courses.map((course) => (
+                                    <div key={`${course.courseCode}-${year}`} className="course-card">
+                                        <h4>{course.courseName}</h4>
+                                        <p><strong>Course Code:</strong> {course.courseCode}</p>
+                                        <p><strong>Credits:</strong> {course.credits}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ))}
             </div>
