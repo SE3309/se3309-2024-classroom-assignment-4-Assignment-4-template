@@ -40,6 +40,7 @@ const ManageEmergencyContactsModal = ({
   //Add a new contact locally
   const handleAddContact = (newContact) => {
     setLocalContacts([...localContacts, newContact]);
+    console.log("Inside Handle Add: ", localContacts)
   };
 
   //Remove a contact locally
@@ -60,9 +61,12 @@ const ManageEmergencyContactsModal = ({
           : contact
       )
     );
+
+    console.log("Inside Handle Edit: ", localContacts);
   };
 
   const handleConfirmChanges = () => {
+    console.log("Inside Confirm Changes: ", localContacts[0], localContacts[1], localContacts[2])
     onSave(localContacts); //Pass the updated contacts back to the parent
     onClose(); //Close the modal
   };
