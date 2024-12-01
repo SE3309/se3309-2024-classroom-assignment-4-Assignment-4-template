@@ -4,14 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import "./HomePage.css";
 
-const StudentDashboard = ({ user, handleCourseSearch, handleViewCourse, handleRegisterUnregister, handleViewCalendar, handleViewTranscript }) => (
+const StudentDashboard = ({
+  user,
+  handleCourseSearch,
+  handleViewCourse,
+  handleRegisterUnregister,
+  handleViewCalendar,
+  handleViewTranscript,
+}) => (
   <>
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
       <h2 className="user-email">{user?.fullName}</h2>
       <p className="status-message">{user?.role} Portal</p>
     </div>
-    
+
     <div className="home-content">
       <div className="action-section">
         <h3 className="section-title">Course Management</h3>
@@ -42,18 +49,31 @@ const StudentDashboard = ({ user, handleCourseSearch, handleViewCourse, handleRe
   </>
 );
 
-const FacultyDashboard = ({ user }) => (
+const FacultyDashboard = ({
+  user,
+  handleViewCourseInstructor,
+  handleModifyCourse,
+}) => (
   <>
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
       <h2 className="user-email">{user?.fullName}</h2>
       <p className="status-message">{user?.role} Portal</p>
     </div>
-    
+
     <div className="home-content">
       <div className="action-section">
         <h3 className="section-title">Faculty Dashboard</h3>
-        <p className="coming-soon-message">Faculty features coming soon...</p>
+
+        <button
+          className="action-button"
+          onClick={() => handleViewCourseInstructor()}
+        >
+          View My Courses
+        </button>
+        <button className="action-button" onClick={handleModifyCourse}>
+          Modify Courses
+        </button>
       </div>
     </div>
   </>
@@ -64,29 +84,36 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const handleCourseSearch = () => {
-    navigate('/course-search');
+    navigate("/course-search");
   };
 
   const handleViewCourse = () => {
-    navigate('/course-view');
+    navigate("/course-view");
+  };
+  const handleViewCourseInstructor = () => {
+    navigate("/course-view-instructor");
   };
 
   const handleRegisterUnregister = () => {
-    navigate('/registration');
+    navigate("/registration");
   };
 
   const handleViewCalendar = () => {
-    navigate('/view-calendar');
+    navigate("/view-calendar");
   };
 
   const handleViewTranscript = () => {
     navigate("/transcript");
   };
 
+  const handleModifyCourse = () => {
+    navigate("/modify-course");
+  };
+
   return (
     <div className="home-container">
-      {user?.role === 'Student' ? (
-        <StudentDashboard 
+      {user?.role === "Student" ? (
+        <StudentDashboard
           user={user}
           handleCourseSearch={handleCourseSearch}
           handleViewCourse={handleViewCourse}
@@ -95,7 +122,11 @@ const HomePage = () => {
           handleViewTranscript={handleViewTranscript}
         />
       ) : (
-        <FacultyDashboard user={user} />
+        <FacultyDashboard
+          user={user}
+          handleViewCourseInstructor={handleViewCourseInstructor}
+          handleModifyCourse={handleModifyCourse}
+        />
       )}
     </div>
   );

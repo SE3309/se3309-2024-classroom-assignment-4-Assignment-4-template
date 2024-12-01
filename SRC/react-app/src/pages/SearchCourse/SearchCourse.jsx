@@ -23,6 +23,7 @@ function SearchCourse() {
             if (response.status === 200) {
                 console.log("The response was ok!");
                 setResults(response.data);
+                setCurrentPage(1);
                 setError(""); // Clear errors
             } else { 
                 setError("There was an issue with the search.")
