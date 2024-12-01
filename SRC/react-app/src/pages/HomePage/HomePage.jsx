@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
-import { Link } from "react-router-dom";
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -65,6 +64,7 @@ const HomePage = () => {
           >
             Add Calendar Event
           </button>
+          
         </div>
       </div>
     </div>
