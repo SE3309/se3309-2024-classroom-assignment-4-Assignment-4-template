@@ -11,6 +11,7 @@ import Header from './components/Header/Header';
 import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
 import SearchCourse from './pages/SearchCourse/SearchCourse';
 import TranscriptPage from './pages/Transcript/TranscriptPage';
+import CourseView from './pages/CourseView/CourseView';
 
 const App = () => {
     return (
@@ -29,6 +30,7 @@ const App = () => {
                             <ProtectedRoute>
                                 <>
                                     <Header />
+                                    
                                     <HomePage />
                                 </>
                             </ProtectedRoute>
@@ -41,6 +43,17 @@ const App = () => {
                                 <>
                                     <Header />
                                     <SearchCourse />
+                                </>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/course-view"
+                        element={
+                            <ProtectedRoute>
+                                <>
+                                    <Header />
+                                    <CourseView />
                                 </>
                             </ProtectedRoute>
                         }

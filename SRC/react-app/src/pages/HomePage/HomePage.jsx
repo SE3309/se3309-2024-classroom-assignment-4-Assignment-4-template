@@ -12,7 +12,7 @@ const HomePage = () => {
     };
 
     const handleViewCouse = () => {
-        navigate('/view-course')
+        navigate('/course-view')
     }
 
     const handleRegisterUnregister = () => {

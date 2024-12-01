@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SearchBar from '../../components/SearchBar/SearchBar';
+import './SearchCourse.css';
 import axios from 'axios'; 
 
 function SearchCourse() {
@@ -50,32 +51,69 @@ function SearchCourse() {
 
   return (
     <div className='search-container'>
-        <SearchBar onSearch={handleSearch}/>
-        {results.length > 0 && hasSearched ? (
+        <div className='search-bar'>
+            <SearchBar onSearch={handleSearch}/>
+        </div>
+    
+    {/* Conditional rendering for results */}
+    {hasSearched ? (
+        results.length > 0 ? (
             <>
-            <div className='results-container'>
-                <ul className='course-list'>
-                    {currentResults.map((course, idx) => (
-                        <li key={idx}>
-                            <h3>{course.courseName}</h3>
-                            <p><strong>Course Code: </strong>{course.courseCode}</p>
-                            <p><strong>Descirption: </strong>{course.courseDescription}</p>
-                            <p><strong>Credit: </strong>{course.credits}</p>
-                        </li>
-                    ))}
-                </ul>
-                <div className='pagination'>
-                    <div>{1}</div>
-                    <button onClick={prevPage}>Previous</button>
-                    <div>{}</div>
-                    <button onClick={nextPage}>Next</button>
-                    <div>{results.length / no}</div>
+                <div className='results-container'>
+                    <ul className='course-list'>
+                        {currentResults.map((course, idx) => (
+                            <li key={idx}>
+                                <h3>{course.courseName}</h3>
+                                <p><strong>Course Code: </strong>{course.courseCode}</p>
+                                <p><strong>Description: </strong>{course.courseDescription}</p>
+                                <p><strong>Credit: </strong>{course.credits}</p>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {/* Pagination controls */}
+                    <div className='pagination'>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '2px',
+                            }}
+                        >
+                            {1}
+                        </div>
+                        <button onClick={prevPage}>Previous</button>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '5px',
+                            }}
+                        >
+                            {currentPage}
+                        </div>
+                        <button onClick={nextPage}>Next</button>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '2px',
+                            }}
+                        >
+                            {Math.ceil(results.length / no)}
+                        </div>
+                    </div>
                 </div>
-            </div>
             </>
         ) : (
-            <h3 className='no-results'>There are no courses for this search</h3>
-        )}
+            <h3 className='not-searched'>Enter a course name or code to view.</h3>
+        )
+    ) : (
+        <h3 className='no-results'>There are no courses for this search.</h3>
+    )}
+
+    {/* Display error if it exists */}
+    {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
 }
