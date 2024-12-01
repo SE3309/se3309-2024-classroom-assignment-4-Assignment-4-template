@@ -7,6 +7,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Initialize user state from localStorage on component mount
     const savedUser = localStorage.getItem('user');
+    console.log(savedUser);
     return savedUser ? JSON.parse(savedUser) : null;
   });
 

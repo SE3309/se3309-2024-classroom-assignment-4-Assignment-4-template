@@ -11,7 +11,7 @@ routes = Blueprint('routes', __name__)
 
 # Initialize the DB connection with environment variables
 db = DBConnection(
-    host=os.getenv("HOST"),
+    host="localhost",
     user='root',
     password=os.getenv("PASSWORD"),
     database=os.getenv("DATABASE")
@@ -189,20 +189,20 @@ def get_student_search():
 
 # Get a course for the student
 @routes.route('/api/student/view-course', methods=['GET'])
-def get_courses(): 
+def get_courses():
     print("\n=== Starting View Courses Request ===")
     studentID = request.args.get('studentID')
     print(f"Requesting courses for student ID: {studentID}")
-    
+   
     if not studentID:
         print("Error: Missing studentID parameter")
         return jsonify({"error": "Missing 'studentID' parameter"}), 400
-    
+   
     conn = db.get_connection()
-    if conn is None: 
+    if conn is None:
         print("Error: Database connection failed")
         return jsonify({"error": "Database connection failed"}), 500
-    
+   
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
@@ -222,11 +222,11 @@ def get_courses():
         cursor.close()
         db.close_connection()
         print("Database connection closed")
-
+ 
     if not result:
         print("No courses found for student")
         return jsonify({"error": "Could not find any course."}), 404
-
+ 
     print("=== View Courses Request Completed Successfully ===\n")
     return jsonify(result)
 
@@ -283,10 +283,6 @@ def see_prof():
 
     print("=== View Courses Request Completed Successfully ===\n")
     return jsonify(result)
-
-@routes.route('/api/student/register', methods=['POST'])
-def course_register():
-    return
 
 @routes.route('/api/student/unregister', methods=['DELETE'])
 def course_unregister():
@@ -1129,3 +1125,76 @@ def get_all_contacts():
     finally:
         cursor.close()
         db.close_connection()
+@routes.route('/api/student/register-course', methods=['POST'])
+def register_course_for_student():
+    """
+    Register a student for a course.
+    """
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    data = request.get_json()
+
+    student_id = data.get('studentID')
+    course_code = data.get('courseCode')
+    cyear = data.get('cyear')
+
+    if not all([student_id, course_code, cyear]):
+        return jsonify({"error": "Missing required fields: studentID, courseCode, or cyear"}), 400
+
+    try:
+        cursor = conn.cursor()
+
+        check_query = """
+        SELECT * FROM StudentCourse
+        WHERE studentID = %s AND courseCode = %s AND cyear = %s
+        """
+        cursor.execute(check_query, (student_id, course_code, cyear))
+        if cursor.fetchone():
+            return jsonify({"error": "Student is already registered for this course"}), 400
+
+        query = """
+        INSERT INTO StudentCourse (studentID, courseCode, cyear)
+        VALUES (%s, %s, %s)
+        """
+        cursor.execute(query, (student_id, course_code, cyear))
+        conn.commit()
+
+        return jsonify({"message": "Student registered for the course successfully"}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
+
+@routes.route('/api/courses', methods=['GET'])
+def get_available_courses():
+    """
+    Fetch all courses for the year 2025.
+    """
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            SELECT c.courseCode, cd.courseName, cd.courseDescription, cd.credits, c.cyear
+            FROM Course c
+            JOIN CourseDetails cd ON c.courseCode = cd.courseCode
+            WHERE c.cyear = 2025
+        """
+        cursor.execute(query)
+        courses = cursor.fetchall()
+        return jsonify(courses), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
