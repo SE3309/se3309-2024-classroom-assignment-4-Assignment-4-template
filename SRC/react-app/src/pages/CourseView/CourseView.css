@@ -4,8 +4,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    min-height: 100vh; /* Full viewport height */
     color: var(--text-secondary);
     font-family: inherit;
 }
@@ -13,7 +11,6 @@
 /* Back button container */
 .back-button {
     align-self: flex-start;
-    margin-bottom: 20px;
 }
 
 .back-button button {
@@ -21,7 +18,6 @@
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 15px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s ease;
@@ -35,7 +31,9 @@
 .search-bar {
     width: 100%;
     max-width: 600px;
-    margin-bottom: 30px;
+    margin: 60px auto; /* Centers the search bar horizontally */
+    display: flex;
+    justify-content: center; /* Centers the content inside the container */
 }
 
 /* Results container */
@@ -138,10 +136,13 @@ p[style*="color: red"] {
 }
 
 /* No results message */
-.results-container p {
+.results-container h3 {
+    max-width: 600px;
+    width: 100%;
     text-align: center;
-    font-size: 16px;
+    font-size: 1.5rem;
     color: var(--danger-color);
+    margin: 0px auto;
 }
 
 /* Media queries for responsiveness */

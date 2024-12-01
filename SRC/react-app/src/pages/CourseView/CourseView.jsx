@@ -13,7 +13,12 @@ function CourseView() {
 
     const handleSearch = async (query) => {
         const { noOfResults, search } = query;
-        console.log("search is: ", search)
+
+        if (!search) {
+            setError("Please input a course name or code.")
+            return;
+        }
+
         setHasSearched(true) 
         try {
             const response = await axios.get("/api/student/view-course", {
@@ -27,7 +32,7 @@ function CourseView() {
             }
         } catch (err) {
             console.log("There was an error: ", err); 
-            setError(err.response.data)
+            setError(err.response.data.error)
         }
     }
 
@@ -46,7 +51,7 @@ function CourseView() {
             }
         } catch (err) {
             console.log("Error when getting prof info: ", err)
-            setError(err.response.data)
+            setError(err.response.data.error)
         }
     }
 
@@ -57,10 +62,11 @@ function CourseView() {
                 <button>Back to Home</button>
             </Link>
         </div>
+
         <div className='search-bar'>
             <SearchBar onSearch={handleSearch}/>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+
         <div className='results-container'>
             {hasSearched ? (
                 results.length > 0 ? (
@@ -98,10 +104,10 @@ function CourseView() {
                 </ul>
                 </>
             ) : (
-            <p style={{ width: '50%'}}>There were no results for this studentID.</p>
+            <h3>{error}</h3>
         )
     ) : (
-        <p>Search using your studentID to see your courses.</p>
+        <h3>Search using your studentID to see your courses.</h3>
         )}
         </div>
     </div>
