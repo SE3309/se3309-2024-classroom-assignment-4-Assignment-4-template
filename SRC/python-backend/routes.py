@@ -791,13 +791,15 @@ def delete_emergency_contact():
 
 @routes.route('/api/faculty/<int:faculty_id>/courses', methods=['GET'])
 def get_faculty_courses(faculty_id):
+    print(f"\n=== Starting Get Faculty Courses Request for Faculty ID: {faculty_id} ===")
     conn = db.get_connection()
     if conn is None:
+        print("Error: Database connection failed")
         return jsonify({"error": "Database connection failed"}), 500
 
     try:
         cursor = conn.cursor(dictionary=True)
-
+        
         # SQL query to fetch courses taught by a faculty member
         query = """
         SELECT 
@@ -820,24 +822,45 @@ def get_faculty_courses(faculty_id):
         ORDER BY 
             c.cyear
         """
+        print(f"Executing query for faculty_id: {faculty_id}")
+        print(f"Query: {query}")
+        
         cursor.execute(query, (faculty_id,))
-
+        
         # Fetch results
         rows = cursor.fetchall()
+        print(f"Found {len(rows)} courses for faculty member")
+
+        if not rows:
+            print("No courses found for faculty member")
+            return jsonify({
+                "facultyID": faculty_id,
+                "courses": {},
+                "message": "No courses found for this faculty member"
+            }), 200
 
         # Group courses by academic year
         courses_by_year = {}
+        print("\nProcessing courses:")
         for row in rows:
+            print(f"Processing course: {row['courseCode']} - {row['courseName']}")
             year = row["academicYear"]
             if year not in courses_by_year:
                 courses_by_year[year] = []
-            courses_by_year[year].append({
-                "courseCode": row["courseCode"],
-                "courseName": row["courseName"],
-                "courseDescription": row.get("courseDescription"),
-                "credits": float(row["credits"]),
-                "department": row.get("department")
-            })
+            
+            try:
+                course_entry = {
+                    "courseCode": row["courseCode"],
+                    "courseName": row["courseName"],
+                    "courseDescription": row.get("courseDescription"),
+                    "credits": float(row["credits"]) if row["credits"] is not None else None,
+                    "department": row.get("department")
+                }
+                courses_by_year[year].append(course_entry)
+                print(f"Successfully added course to year {year}")
+            except Exception as e:
+                print(f"Error processing course {row['courseCode']}: {str(e)}")
+                print(f"Raw row data: {row}")
 
         # Prepare the response
         response = {
@@ -845,13 +868,19 @@ def get_faculty_courses(faculty_id):
             "courses": courses_by_year
         }
 
+        print("=== Get Faculty Courses Request Completed Successfully ===\n")
         return jsonify(response), 200
 
     except Exception as e:
+        print(f"Error in get_faculty_courses:")
+        print(f"Exception type: {type(e).__name__}")
+        print(f"Exception message: {str(e)}")
+        print("=== Get Faculty Courses Request Failed ===\n")
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     finally:
         cursor.close()
         db.close_connection()
+        print("Database connection closed")
 
 @routes.route('/api/faculty/courses', methods=['POST'])
 def add_faculty_course():
