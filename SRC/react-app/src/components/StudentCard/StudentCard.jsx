@@ -1,7 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StudentCard = ({ email, fullName, yearInProgram, graduationYear, program, onEdit, onDelete }) => {
+const StudentCard = ({ email, fullName, yearInProgram, graduationYear, program, onEdit, onDelete, onManageEmergencyContacts }) => {
   return (
     <div className="card shadow-sm">
       <div className="card-body">
@@ -19,6 +19,13 @@ const StudentCard = ({ email, fullName, yearInProgram, graduationYear, program, 
           <strong>Program:</strong> {program}
         </p>
         <div className="d-flex justify-content-end mt-3">
+        <button
+            className="btn btn-outline-primary btn-sm me-2"
+            type="button"
+            onClick={onManageEmergencyContacts}
+          >
+            Manage Emergency Contacts
+          </button>
           <button
             className="btn btn-primary btn-sm me-2"
             type="button"

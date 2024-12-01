@@ -4,25 +4,29 @@ import StudentCard from "../../components/StudentCard/StudentCard.jsx";
 import ViewStudentModal from "../../components/ViewStudentModal/ViewStudentModal.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./ManageStudentsPage.css";
+import ManageEmergencyContactsModal from "../../ManageEmergencyContactsModal/ManageEmergencyContactsModal.jsx";
 
 const ManageStudentsPage = () => {
   const [students, setStudents] = useState([]);
   const [query, setQuery] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewStudentModalOpen, setIsViewStudentModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState({});
+  const [isEmergencyContactsModalOpen, setIsEmergencyContactsModalOpen] =
+    useState(false);
+  const [selectedStudentContacts, setSelectedStudentContacts] = useState([]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeViewStudentModal = () => {
+    setIsViewStudentModalOpen(false);
   };
 
-  const openModal = (student = null) => {
+  const openViewStudentModal = (student = null) => {
     setSelectedStudent(student || {});
     setIsEditing(!!student);
-    setIsModalOpen(true);
+    setIsViewStudentModalOpen(true);
   };
 
-  const handleSubmitForm = async (student) => {
+  const handleSubmitStudentForm = async (student) => {
     try {
       if (isEditing) {
         // Make an API call to update the student
@@ -33,39 +37,45 @@ const ManageStudentsPage = () => {
         console.log("Student updated:", response.data);
       } else {
         // Make an API call to create a new student
-        const response = await axios.post("http://127.0.0.1:5000/api/students", student);
+        const response = await axios.post(
+          "http://127.0.0.1:5000/api/students",
+          student
+        );
         console.log("New student created:", response.data);
       }
       // Refresh the student list after the operation
       fetchStudents(query);
-      closeModal();
+      closeViewStudentModal();
     } catch (error) {
-      console.error("Error submitting form:", error.response?.data || error.message);
+      console.error(
+        "Error submitting form:",
+        error.response?.data || error.message
+      );
     }
   };
 
   const handleSearch = (e) => {
     e.preventDefault(); //prevent refresh
-    fetchStudents(query)
-  }
+    fetchStudents(query);
+  };
 
-  const handleDelete = async (student) => {
+  const handleDeleteStudent = async (student) => {
     try {
       // Confirm deletion with the user
       const confirmDelete = window.confirm(
         `Are you sure you want to delete ${student.fullName}?`
       );
       if (!confirmDelete) return;
-  
+
       console.log("Deleting Student:", student);
-  
+
       // API call to delete the student
       const response = await axios.delete(
         `http://127.0.0.1:5000/api/students/${student.studentID}`
       );
-  
+
       console.log("Student deleted successfully:", response.data);
-  
+
       // Refresh the student list
       await fetchStudents(query);
     } catch (error) {
@@ -76,7 +86,6 @@ const ManageStudentsPage = () => {
       alert("Failed to delete the student. Please try again.");
     }
   };
-  
 
   const fetchStudents = async (searchQuery = "") => {
     try {
@@ -87,6 +96,101 @@ const ManageStudentsPage = () => {
     } catch (error) {
       console.error("Error fetching students");
       setStudents([]); // Display no results
+    }
+  };
+
+  const openManageEmergencyContactsModal = (student) => {
+    setSelectedStudent(student);
+    setSelectedStudentContacts(student.emergencyContacts || []);
+    setIsEmergencyContactsModalOpen(true);
+  };
+
+  const closeEmergencyContactsModal = () => {
+    setIsEmergencyContactsModalOpen(false);
+    setSelectedStudentContacts([]);
+  };
+
+  const handleConfirmEmergencyContacts = async (updatedContacts) => {
+    const currentContacts = selectedStudentContacts;
+
+    //Determine which contact were updated
+    const updated = updatedContacts.filter((newContact) =>
+      currentContacts.some(
+        (currentContact) =>
+          currentContact.phoneNumber === newContact.phoneNumber &&
+          (currentContact.contactName !== newContact.contactName ||
+            currentContact.address !== newContact.address ||
+            currentContact.postalCode !== newContact.postalCode)
+      )
+    );
+
+    //Determine which contacts were created
+    const added = updatedContacts.filter(
+      (newContact) =>
+        !currentContacts.some(
+          (currentContact) =>
+            currentContact.phoneNumber === newContact.phoneNumber
+        )
+    );
+
+    //Determine which contacts were removed
+    const removed = currentContacts.filter(
+      (currentContact) =>
+        !updatedContacts.some(
+          (newContact) => currentContact.phoneNumber === newContact.phoneNumber
+        )
+    );
+
+    try {
+      //Handle updates
+      for (const contact of updated) {
+        await axios.put(
+          `http://127.0.0.1:5000/api/contacts/${contact.phoneNumber}`,
+          {
+            contactName: contact.contactName,
+            address: contact.address,
+            postalCode: contact.postalCode,
+          }
+        );
+      }
+
+      //Handle additions
+      for (const contact of added) {
+        // Create the contact
+        await axios.post(`http://127.0.0.1:5000/api/contacts`, {
+          phoneNumber: contact.phoneNumber,
+          contactName: contact.contactName,
+          address: contact.address,
+          postalCode: contact.postalCode,
+        });
+
+        // Link the contact to the student
+        await axios.post(`http://127.0.0.1:5000/api/emergencyContacts`, {
+          studentID: selectedStudent.studentID,
+          phoneNumber: contact.phoneNumber,
+        });
+      }
+
+      //Handle deletions
+      for (const contact of removed) {
+        await axios.delete(`http://127.0.0.1:5000/api/emergency-contacts`, {
+          params: {
+            studentID: selectedStudent.studentID,
+            phoneNumber: contact.phoneNumber,
+          },
+        });
+      }
+
+      //Refresh data
+      fetchStudents(query);
+      setIsEmergencyContactsModalOpen(false);
+      alert("Emergency contacts updated successfully!");
+    } catch (error) {
+      console.error(
+        "Error updating emergency contacts:",
+        error.response?.data || error.message
+      );
+      alert("Failed to update emergency contacts. Please try again.");
     }
   };
 
@@ -111,7 +215,10 @@ const ManageStudentsPage = () => {
             </form>
           </div>
           <div className="col-md-4 text-md-end mt-3 mt-md-0">
-            <button className="btn btn-success" onClick={() => openModal()}>
+            <button
+              className="btn btn-success"
+              onClick={() => openViewStudentModal()}
+            >
               Add Student
             </button>
           </div>
@@ -129,8 +236,11 @@ const ManageStudentsPage = () => {
                 yearInProgram={student.yearInProgram}
                 graduationYear={student.graduationYear}
                 program={student.program}
-                onEdit={() => openModal(student)}
-                onDelete={() => handleDelete(student)}
+                onEdit={() => openViewStudentModal(student)}
+                onDelete={() => handleDeleteStudent(student)}
+                onManageEmergencyContacts={() =>
+                  openManageEmergencyContactsModal(student)
+                }
               />
             </div>
           ))}
@@ -145,11 +255,18 @@ const ManageStudentsPage = () => {
       </div>
 
       <ViewStudentModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSave={handleSubmitForm}
+        isOpen={isViewStudentModalOpen}
+        onClose={closeViewStudentModal}
+        onSave={handleSubmitStudentForm}
         initialData={selectedStudent}
         isEditing={isEditing}
+      />
+
+      <ManageEmergencyContactsModal
+        isOpen={isEmergencyContactsModalOpen}
+        onClose={closeEmergencyContactsModal}
+        emergencyContacts={selectedStudentContacts}
+        onSave={handleConfirmEmergencyContacts}
       />
     </div>
   );
