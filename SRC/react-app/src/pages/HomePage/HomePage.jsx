@@ -19,6 +19,10 @@ const HomePage = () => {
     navigate("/transcript");
   };
 
+  const handleCourseRegistration = () => {
+    navigate("/register-course")
+  }
+
   return (
     <div className="home-container">
       <div className="welcome-header">
@@ -44,7 +48,7 @@ const HomePage = () => {
           </button>
           <button
             className="action-button"
-            onClick={() => handleActionClick("Register/Unregister for Courses")}
+            onClick={handleCourseRegistration}
           >
             Course Registration
           </button>
