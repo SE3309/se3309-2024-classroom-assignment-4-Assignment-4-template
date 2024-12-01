@@ -201,7 +201,11 @@ const ManageStudentsPage = () => {
       <div className="container py-3 border-bottom">
         <div className="row align-items-center">
           <div className="col-md-8">
-            <form onSubmit={handleSearch} className="d-flex">
+            <form
+              style={{ all: "unset" /*Remove Global styles */ }}
+              onSubmit={handleSearch}
+              className="d-flex"
+            >
               <input
                 type="text"
                 placeholder="Search by name or student number"
