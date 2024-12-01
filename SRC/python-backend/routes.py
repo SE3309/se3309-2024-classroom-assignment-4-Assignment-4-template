@@ -117,13 +117,27 @@ def faculty_login():
 
     if user:
         print(f"Success: Faculty user found - {user['email']}")
+        # Create a standardized user object similar to student login
+        formatted_user = {
+            'facultyID': user['facultyID'],
+            'email': user['email'],
+            'fullName': user['fullName'],
+            'role': 'Faculty',  # Explicitly set role
+            'officeNo': user['officeNo'],
+            'contactInfo': user['contactInfo'],
+            'departmentID': user['departmentID']
+        }
+        
         token = jwt.encode(
             {'user_id': user['facultyID'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)},
             SECRET_KEY,
             algorithm='HS256'
         )
         print("=== Faculty Login Request Completed Successfully ===\n")
-        return jsonify({'token': token, 'user': user}), 200
+        return jsonify({
+            'token': token, 
+            'user': formatted_user
+        }), 200
     else:
         print("Error: Invalid credentials")
         print("=== Faculty Login Request Failed ===\n")
