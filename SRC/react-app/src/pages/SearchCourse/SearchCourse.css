@@ -8,6 +8,14 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
   }
+
+  /* Search bar container */
+.search-bar {
+    width: 100%;
+    max-width: 600px;
+    margin-top:70px;
+    margin-left: 450px
+}
   
   /* Course List Styling */
   .course-list {
@@ -78,10 +86,17 @@
   
   /* No Results Message */
   .no-results {
-    margin-top: 20px;
     text-align: center;
     font-size: 1.5em;
     color: var(--danger-color);
+    width: 100%;
+    max-width: 600px;
+    background-color: var(--background-dark);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px auto;
+    box-sizing: border-box;
   }
   
   /* Responsive Design */
