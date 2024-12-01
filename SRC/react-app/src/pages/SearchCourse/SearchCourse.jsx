@@ -14,11 +14,16 @@ function SearchCourse() {
         const { noOfResults, search } = query;
         resNo(noOfResults)
 
+        if (!search) {
+            setError("Please input a course name or code.")
+            return;
+        }
+
+        setHasSearched(true)
         try {
             const response = await axios.get("/api/student/search", {
                 params: { search }
             });
-            setHasSearched(true)
 
             if (response.status === 200) {
                 console.log("The response was ok!");
@@ -30,7 +35,7 @@ function SearchCourse() {
             }
         } catch (err) {
             console.log("There was an error: ", err)
-            setError(err.response.data)
+            setError(err.response.data.error)
         }
     }
 
@@ -107,14 +112,12 @@ function SearchCourse() {
                 </div>
             </>
         ) : (
-            <h3 className='not-searched'>Enter a course name or code to view.</h3>
+            <h3 className='no-results'>{error}</h3>
         )
     ) : (
-        <h3 className='no-results'>There are no courses for this search.</h3>
+        <h3 className='no-results'>Enter a course name or code to view.</h3>
     )}
 
-    {/* Display error if it exists */}
-    {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
 }
