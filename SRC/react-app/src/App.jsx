@@ -12,7 +12,7 @@ import TranscriptPage from './pages/Transcript/TranscriptPage';
 import CourseView from './pages/CourseView/CourseView';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ManageStudentsPage from "./pages/ManageStudents/ManageStudentsPage";
-
+import ModifyCourse from './pages/ModifyCourse/ModifyCourse';
 const App = () => {
   return (
     <UserProvider>
@@ -96,6 +96,17 @@ const App = () => {
                 <>
                   <Header />
                   <TranscriptPage />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/modify-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Header />
+                  <ModifyCourse />
                 </>
               </ProtectedRoute>
             }

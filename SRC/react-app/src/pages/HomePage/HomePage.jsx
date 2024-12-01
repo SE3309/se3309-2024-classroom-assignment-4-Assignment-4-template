@@ -42,7 +42,7 @@ const StudentDashboard = ({ user, handleCourseSearch, handleViewCourse, handleRe
   </>
 );
 
-const FacultyDashboard = ({ user }) => (
+const FacultyDashboard = ({ user, handleModifyCourse }) => (
   <>
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
@@ -52,8 +52,10 @@ const FacultyDashboard = ({ user }) => (
     
     <div className="home-content">
       <div className="action-section">
-        <h3 className="section-title">Faculty Dashboard</h3>
-        <p className="coming-soon-message">Faculty features coming soon...</p>
+        <h3 className="section-title">Course Management</h3>
+        <button className="action-button" onClick={handleModifyCourse}>
+          Modify Courses
+        </button>
       </div>
     </div>
   </>
@@ -83,6 +85,10 @@ const HomePage = () => {
     navigate("/transcript");
   };
 
+  const handleModifyCourse = () => {
+    navigate('/modify-course');
+  };
+
   return (
     <div className="home-container">
       {user?.role === 'Student' ? (
@@ -95,7 +101,10 @@ const HomePage = () => {
           handleViewTranscript={handleViewTranscript}
         />
       ) : (
-        <FacultyDashboard user={user} />
+        <FacultyDashboard 
+          user={user} 
+          handleModifyCourse={handleModifyCourse}
+        />
       )}
     </div>
   );
