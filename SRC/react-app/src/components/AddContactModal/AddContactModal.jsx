@@ -40,9 +40,7 @@ const AddContactModal = ({ isOpen, onClose, onSave, existingContacts }) => {
         // Save the new contact if no match is found
         onSave(formData);
       }
-  
-    // Proceed with saving the contact
-    onSave(formData);
+
     onClose();
   };
   

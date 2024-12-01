@@ -142,6 +142,16 @@ const ManageStudentsPage = () => {
     );
 
     try {
+      //Handle deletions first
+      for (const contact of removed) {
+        await axios.delete(`http://127.0.0.1:5000/api/emergency-contacts`, {
+          params: {
+            studentID: selectedStudent.studentID,
+            phoneNumber: contact.phoneNumber,
+          },
+        });
+      }
+
       //Handle updates
       for (const contact of updated) {
         await axios.put(
@@ -161,17 +171,7 @@ const ManageStudentsPage = () => {
           phoneNumber: contact.phoneNumber,
           postalCode: contact.postalCode,
           address: contact.address,
-          contactName: contact.contactName
-        });
-      }
-
-      //Handle deletions
-      for (const contact of removed) {
-        await axios.delete(`http://127.0.0.1:5000/api/emergency-contacts`, {
-          params: {
-            studentID: selectedStudent.studentID,
-            phoneNumber: contact.phoneNumber,
-          },
+          contactName: contact.contactName,
         });
       }
 
