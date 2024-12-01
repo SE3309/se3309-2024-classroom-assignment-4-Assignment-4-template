@@ -19,11 +19,11 @@ const AddCalendarPage = () => {
                 eventDescription,
                 eventStart,
                 eventDuration,
-                studentId: user.id,
+                studentId: user.studentID,
                 cyear: null,
                 courseCode: null,
             };
-
+           
             const response = await fetch('http://localhost:5000/api/events', {
                 method: 'POST',
                 headers: {
@@ -36,7 +36,7 @@ const AddCalendarPage = () => {
                 throw new Error('Failed to add the event');
             }
 
-            console.log('Event successfully added:', newEvent);
+           alert("Event successfully added");
 
             navigate('/view-calendar');
         } catch (error) {
