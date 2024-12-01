@@ -11,7 +11,7 @@ routes = Blueprint('routes', __name__)
 
 # Initialize the DB connection with environment variables
 db = DBConnection(
-    host=os.getenv("HOST"),
+    host="localhost",
     user='root',
     password=os.getenv("PASSWORD"),
     database=os.getenv("DATABASE")
