@@ -6,7 +6,7 @@ import AuthService from '../../services/AuthService';
 
 const Header = () => {
     const navigate = useNavigate();
-    const { logout } = useContext(UserContext);
+    const { user, logout } = useContext(UserContext);
 
     const handleLogout = () => {
         AuthService.logout();
@@ -14,12 +14,24 @@ const Header = () => {
         navigate('/');
     };
 
+    const handleHomeClick = () => {
+        navigate('/home');
+    };
+
     return (
         <header className="header">
-            <h1>G.R.A.D.E.S</h1>
-            <button onClick={handleLogout} className="logout-button">
-                Logout
-            </button>
+            <div className="header-left">
+                <h1>G.R.A.D.E.S</h1>
+                {user?.role && <span className="user-role">{user.role}</span>}
+            </div>
+            <div className="header-right">
+                <button onClick={handleHomeClick} className="home-button">
+                    Home
+                </button>
+                <button onClick={handleLogout} className="logout-button">
+                    Logout
+                </button>
+            </div>
         </header>
     );
 };

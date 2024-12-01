@@ -1,4 +1,3 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
 import HomePage from './pages/HomePage/HomePage';
 import StudentLoginPage from './pages/StudentLoginPage/StudentLoginPage';
@@ -11,6 +10,7 @@ import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
 import SearchCourse from './pages/SearchCourse/SearchCourse';
 import TranscriptPage from './pages/Transcript/TranscriptPage';
 import CourseView from './pages/CourseView/CourseView';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ManageStudentsPage from "./pages/ManageStudents/ManageStudentsPage";
 
 const App = () => {
