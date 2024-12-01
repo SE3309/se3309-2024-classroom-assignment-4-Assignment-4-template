@@ -234,9 +234,9 @@ def get_courses():
 def see_prof(): 
     print("\n=== Starting Prof Info Request ===")
     courseCode = request.args.get('courseCode')
-    print(f"Requesting courses for Course Code: {courseCode} and {cyear}")
+    print(f"Requesting courses for Course Code: {courseCode}")
     
-    if not courseCode or not cyear:
+    if not courseCode:
         print("Error: Missing courseCode parameter")
         return jsonify({"error": "Missing 'courseCode' parameter"}), 400
     
