@@ -14,11 +14,11 @@ const AuthService = {
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         user: data.user,
-        token: data.token
+        token: data.token,
       };
     } catch (err) {
       return { success: false, message: err.message };
@@ -40,11 +40,11 @@ const AuthService = {
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         user: data.user,
-        token: data.token
+        token: data.token,
       };
     } catch (err) {
       return { success: false, message: err.message };
@@ -62,7 +62,7 @@ const AuthService = {
   getCurrentUserId: () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
-    
+
     try {
       const payload = token.split(".")[1];
       const decoded = JSON.parse(atob(payload));

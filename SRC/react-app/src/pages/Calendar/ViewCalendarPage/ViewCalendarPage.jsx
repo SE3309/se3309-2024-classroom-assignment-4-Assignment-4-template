@@ -32,7 +32,12 @@ const ViewCalendarPage = () => {
         }
     }, [user]);
 
-    const handleDeleteEvent = async (eventId) => {
+
+    const handleDeleteEvent = async (eventId,courseId) => {
+        if(courseId){
+            alert("Cant Delete a weekly lecture");
+            return
+        }
         try {
             const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
                 method: 'DELETE',
@@ -120,7 +125,7 @@ const ViewCalendarPage = () => {
                                     </div>
                                     <button
                                         className="delete-button"
-                                        onClick={() => handleDeleteEvent(event.eventID)}
+                                        onClick={() => handleDeleteEvent(event.eventID,event.courseCode)}
                                     >
                                         ×
                                     </button>
