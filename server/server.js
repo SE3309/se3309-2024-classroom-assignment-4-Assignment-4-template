@@ -488,6 +488,54 @@ app.post(
   }
 );
 
+//Check Available Flights For User
+app.post(
+  "/api/check-available-flights",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { departureAirport, arrivalAirport, startDate, endDate } = req.body;
+
+    if (!departureAirport || !arrivalAirport || !startDate || !endDate) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const query = `
+      SELECT 
+        f.flightID, 
+        al.name AS airlineName, 
+        f.departureTime, 
+        f.arrivalTime, 
+        f.price
+      FROM Flight f
+      JOIN Airline al ON f.airlineID = al.airlineID
+      WHERE f.departureAirport = ? 
+        AND f.arrivalAirport = ? 
+        AND DATE(f.departureTime) >= DATE(?) 
+        AND DATE(f.arrivalTime) <= DATE(?);
+    `;
+
+    const params = [departureAirport, arrivalAirport, startDate, endDate];
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error("Error fetching flights:", err);
+        return res.status(500).json({ error: "Error fetching flights" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "No flights available for the selected dates." });
+      }
+
+      res.status(200).json(results);
+    });
+  }
+);
+
+
+
+
+
+
 
 
 // set port
