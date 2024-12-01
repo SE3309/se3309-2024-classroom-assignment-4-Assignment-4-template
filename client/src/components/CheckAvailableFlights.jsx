@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function CheckAvailableFlights() {
   const [departureAirport, setDepartureAirport] = useState('');
@@ -6,8 +6,41 @@ function CheckAvailableFlights() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [flights, setFlights] = useState([]);
+  const [airportCodes, setAirportCodes] = useState([]);
   const [error, setError] = useState(null);
   const [noFlightsMessage, setNoFlightsMessage] = useState('');
+
+  useEffect(() => {
+    const fetchAirportCodes = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('User is not authenticated.');
+        }
+
+        const response = await fetch('/api/airports', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          throw new Error(errorResponse.error || 'Failed to fetch airport codes.');
+        }
+
+        const data = await response.json();
+        setAirportCodes(data.map(airport => airport.airportCode));
+      } catch (err) {
+        console.error('Error fetching airport codes:', err);
+        setError(err.message);
+      }
+    };
+
+    fetchAirportCodes();
+  }, []);
 
   const handleSearchFlights = async (e) => {
     e.preventDefault();
@@ -56,20 +89,31 @@ function CheckAvailableFlights() {
       <div className="userInput">
         <form onSubmit={handleSearchFlights}>
           <div>
-            <input
-              type="text"
-              placeholder="Departure Airport Code"
+            <select
               value={departureAirport}
               onChange={(e) => setDepartureAirport(e.target.value)}
               required
-            />
-            <input
-              type="text"
-              placeholder="Arrival Airport Code"
+            >
+              <option value="">Select Departure Airport</option>
+              {airportCodes.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+
+            <select
               value={arrivalAirport}
               onChange={(e) => setArrivalAirport(e.target.value)}
               required
-            />
+            >
+              <option value="">Select Arrival Airport</option>
+              {airportCodes.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
           </div>
 
           <p>Start Date:</p>
