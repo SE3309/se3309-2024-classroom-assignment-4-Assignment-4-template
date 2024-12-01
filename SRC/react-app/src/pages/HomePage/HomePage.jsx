@@ -1,18 +1,19 @@
 /* eslint-disable react/prop-types */
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import "./HomePage.css";
 
-const StudentDashboard = ({
-  user,
-  handleCourseSearch,
-  handleViewCourse,
-  handleRegisterUnregister,
-  handleViewCalendar,
-  handleViewTranscript,
+const StudentDashboard = ({ 
+  user, 
+  handleCourseSearch, 
+  handleViewCourse, 
+  handleRegisterUnregister, 
+  handleViewCalendar, 
+  handleViewTranscript, 
+  handleAddCalendarEvent 
 }) => (
-  <>
+  <div className="home-container">
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
       <h2 className="user-email">{user?.fullName}</h2>
@@ -41,12 +42,12 @@ const StudentDashboard = ({
         <button className="action-button" onClick={handleViewCalendar}>
           View Calendar
         </button>
-        <button className="action-button" onClick={() => handleViewCalendar()}>
+        <button className="action-button" onClick={handleAddCalendarEvent}>
           Add Calendar Event
         </button>
       </div>
     </div>
-  </>
+  </div>
 );
 
 const FacultyDashboard = ({
@@ -54,7 +55,7 @@ const FacultyDashboard = ({
   handleViewCourseInstructor,
   handleModifyCourse,
 }) => (
-  <>
+  <div className="home-container">
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
       <h2 className="user-email">{user?.fullName}</h2>
@@ -76,7 +77,7 @@ const FacultyDashboard = ({
         </button>
       </div>
     </div>
-  </>
+  </div>
 );
 
 const HomePage = () => {
@@ -96,10 +97,15 @@ const HomePage = () => {
 
   const handleRegisterUnregister = () => {
     navigate("/registration");
+    navigate("/course-registration");
   };
 
   const handleViewCalendar = () => {
     navigate("/view-calendar");
+  };
+
+  const handleAddCalendarEvent = () => {
+    navigate("/add-event");
   };
 
   const handleViewTranscript = () => {
@@ -120,6 +126,7 @@ const HomePage = () => {
           handleRegisterUnregister={handleRegisterUnregister}
           handleViewCalendar={handleViewCalendar}
           handleViewTranscript={handleViewTranscript}
+          handleAddCalendarEvent={handleAddCalendarEvent}
         />
       ) : (
         <FacultyDashboard
