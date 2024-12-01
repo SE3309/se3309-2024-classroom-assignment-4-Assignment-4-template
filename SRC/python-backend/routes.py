@@ -789,3 +789,59 @@ def delete_emergency_contact():
         cursor.close()
         db.close_connection()
 
+@routes.route('/api/emergency-contacts', methods=['POST'])
+def add_emergency_contact():
+    """
+    Add a new contact and associate it with a student as an emergency contact.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    phone_number = data.get('phoneNumber')
+    contact_name = data.get('contactName')
+    address = data.get('address')
+    postal_code = data.get('postalCode')
+    student_id = data.get('studentID')
+
+    # Validate required fields
+    if not all([phone_number, student_id]):
+        return jsonify({"error": "Phone number and student ID are required"}), 400
+
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+
+        # Check if the contact already exists in the Contact table
+        contact_exists_query = "SELECT COUNT(*) FROM Contact WHERE phoneNumber = %s"
+        cursor.execute(contact_exists_query, (phone_number,))
+        contact_exists = cursor.fetchone()[0] > 0
+
+        # If the contact doesn't exist, create it
+        if not contact_exists:
+            create_contact_query = """
+            INSERT INTO Contact (phoneNumber, cName, address, postalCode)
+            VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(create_contact_query, (phone_number, contact_name, address, postal_code))
+
+        # Link the contact to the student in the EmergencyContact table
+        create_emergency_contact_query = """
+        INSERT INTO EmergencyContact (studentID, phoneNumber)
+        VALUES (%s, %s)
+        """
+        cursor.execute(create_emergency_contact_query, (student_id, phone_number))
+
+        conn.commit()
+        return jsonify({"message": "Emergency contact added successfully"}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()

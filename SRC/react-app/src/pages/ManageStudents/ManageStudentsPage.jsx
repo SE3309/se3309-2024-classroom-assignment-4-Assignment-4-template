@@ -156,18 +156,12 @@ const ManageStudentsPage = () => {
 
       //Handle additions
       for (const contact of added) {
-        // Create the contact
-        await axios.post(`http://127.0.0.1:5000/api/contacts`, {
-          phoneNumber: contact.phoneNumber,
-          contactName: contact.contactName,
-          address: contact.address,
-          postalCode: contact.postalCode,
-        });
-
-        // Link the contact to the student
-        await axios.post(`http://127.0.0.1:5000/api/emergencyContacts`, {
+        await axios.post(`http://127.0.0.1:5000/api/emergency-contacts`, {
           studentID: selectedStudent.studentID,
           phoneNumber: contact.phoneNumber,
+          postalCode: contact.postalCode,
+          address: contact.address,
+          contactName: contact.contactName
         });
       }
 

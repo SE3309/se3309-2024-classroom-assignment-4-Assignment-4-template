@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EmergencyContactCard from "../components/EmergencyContactCard/EmergencyContactCard";
+import AddContactModal from "../components/AddContactModal/AddContactModal";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ManageEmergencyContactsModal = ({
@@ -9,7 +10,7 @@ const ManageEmergencyContactsModal = ({
   onSave,
 }) => {
   const [localContacts, setLocalContacts] = useState(emergencyContacts);
-  const [newContact, setNewContact] = useState("");
+  const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
 
   //Synchronize localContacts with emergencyContacts whenever the modal opens or the emergencyContacts prop changes
   useEffect(() => {
@@ -19,13 +20,8 @@ const ManageEmergencyContactsModal = ({
   }, [isOpen, emergencyContacts]);
 
   //Add a new contact locally
-  const handleAddContact = () => {
-    if (newContact.trim() === "") {
-      alert("Please enter a valid phone number.");
-      return;
-    }
-    setLocalContacts([...localContacts, { phoneNumber: newContact }]);
-    setNewContact(""); //Clear the input field after adding
+  const handleAddContact = (newContact) => {
+    setLocalContacts([...localContacts, newContact]);
   };
 
   //Remove a contact locally
@@ -74,7 +70,7 @@ const ManageEmergencyContactsModal = ({
                 <button
                   type="button"
                   className="btn btn-success text-nowrap w-100"
-                  onClick={handleAddContact}
+                  onClick={() => {setIsAddContactModalOpen(true)}}
                   disabled={!(localContacts.length < 3)} //Prevent the user from adding a contact if the student already has 3
                 >
                   Add Contact
@@ -111,6 +107,12 @@ const ManageEmergencyContactsModal = ({
           </div>
         </div>
       </div>
+      <AddContactModal
+        isOpen={isAddContactModalOpen}
+        onClose={() => setIsAddContactModalOpen(false)}
+        onSave={handleAddContact}
+        existingContacts={localContacts} //fix this!
+      />
     </>
   );
 };
