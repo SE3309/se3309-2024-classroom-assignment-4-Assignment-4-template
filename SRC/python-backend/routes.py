@@ -284,10 +284,6 @@ def see_prof():
     print("=== View Courses Request Completed Successfully ===\n")
     return jsonify(result)
 
-@routes.route('/api/student/register', methods=['POST'])
-def course_register():
-    return
-
 @routes.route('/api/student/unregister', methods=['DELETE'])
 def course_unregister():
     return
@@ -785,6 +781,79 @@ def delete_emergency_contact():
         conn.rollback()
         return jsonify({"error": f"Failed to delete EmergencyContact: {str(e)}"}), 500
 
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/student/register-course', methods=['POST'])
+def register_course_for_student():
+    """
+    Register a student for a course.
+    """
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    data = request.get_json()
+
+    student_id = data.get('studentID')
+    course_code = data.get('courseCode')
+    cyear = data.get('cyear')
+
+    if not all([student_id, course_code, cyear]):
+        return jsonify({"error": "Missing required fields: studentID, courseCode, or cyear"}), 400
+
+    try:
+        cursor = conn.cursor()
+
+        check_query = """
+        SELECT * FROM StudentCourse
+        WHERE studentID = %s AND courseCode = %s AND cyear = %s
+        """
+        cursor.execute(check_query, (student_id, course_code, cyear))
+        if cursor.fetchone():
+            return jsonify({"error": "Student is already registered for this course"}), 400
+
+        query = """
+        INSERT INTO StudentCourse (studentID, courseCode, cyear)
+        VALUES (%s, %s, %s)
+        """
+        cursor.execute(query, (student_id, course_code, cyear))
+        conn.commit()
+
+        return jsonify({"message": "Student registered for the course successfully"}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
+
+@routes.route('/api/courses', methods=['GET'])
+def get_available_courses():
+    """
+    Fetch all courses for the year 2025.
+    """
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            SELECT c.courseCode, cd.courseName, cd.courseDescription, cd.credits, c.cyear
+            FROM Course c
+            JOIN CourseDetails cd ON c.courseCode = cd.courseCode
+            WHERE c.cyear = 2025
+        """
+        cursor.execute(query)
+        courses = cursor.fetchall()
+        return jsonify(courses), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     finally:
         cursor.close()
         db.close_connection()
