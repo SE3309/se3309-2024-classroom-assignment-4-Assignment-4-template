@@ -32,7 +32,7 @@ function CourseView() {
     }
 
     const toggleMore = async (code, year) => {
-        setExpandedCourse(code)
+        setExpandedCourse(expandedCourse === code ? null : code);
         try {
             const response = await axios.get('/api/student/prof-info', {
                 params: { courseCode: code, cyear: year.toString() }
@@ -77,19 +77,20 @@ function CourseView() {
                             <p><strong>Grade: </strong>{course.grade}</p>
                             <p><strong>Credit: </strong>{course.credits}</p>
                             <button className='toggle-button' onClick={() => toggleMore(course.courseCode, course.cyear)}>
-                                {expandedCourse === course.courseCode ? "View less" : "View more"}
+                                {expandedCourse === course.courseCode ? "VIEW LESS" : "VIEW MORE"}
                             </button>
+
                             {expandedCourse === course.courseCode && (
                                 <div className='extra-info'>
                                     <ul>
-                                        {profInfo.map((prof, idx) => {
+                                        {profInfo.map((prof, idx) => (
                                             <li key={idx} className='prof-info'>
-                                                <h4>{prof.instructorName}</h4>
+                                                <h4><b>Instructor Name: </b>{prof.instructorName}</h4>
                                                 <p><strong>Department: </strong>{prof.departmentName}</p>
                                                 <p><strong>Office: </strong>{prof.instructorOffice}</p>
                                                 <p><strong>Contact Info: </strong>{prof.instructorContact}</p>
                                             </li>
-                                        })}
+                                        ))}
                                     </ul>
                                 </div>
                             )}
