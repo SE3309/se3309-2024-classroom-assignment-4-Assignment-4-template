@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/modal.css";
 
@@ -10,6 +10,7 @@ const ViewStudentModal = ({
   isEditing,
 }) => {
   const [student, setStudent] = useState({
+    studentID: "",
     fullName: "",
     email: "",
     yearInProgram: "",
@@ -20,6 +21,7 @@ const ViewStudentModal = ({
   // Update state whenever initialData changes
   useEffect(() => {
     setStudent({
+      studentID: initialData.studentID || "",
       fullName: initialData.fullName || "",
       email: initialData.email || "",
       yearInProgram: initialData.yearInProgram || "",
@@ -28,9 +30,13 @@ const ViewStudentModal = ({
     });
   }, [initialData]);
 
+  // Handle input field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setStudent({ ...student, [name]: value });
+    setStudent((prevStudent) => ({
+      ...prevStudent,
+      [name]: value,
+    }));
   };
 
   const handleSave = () => {
@@ -70,8 +76,8 @@ const ViewStudentModal = ({
                     id="fullName"
                     name="fullName"
                     value={student.fullName}
-                    onChange={handleChange}
                     placeholder="Enter full name"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="mb-3">
@@ -84,8 +90,8 @@ const ViewStudentModal = ({
                     id="email"
                     name="email"
                     value={student.email}
-                    onChange={handleChange}
                     placeholder="Enter email"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="mb-3">
@@ -98,8 +104,8 @@ const ViewStudentModal = ({
                     id="yearInProgram"
                     name="yearInProgram"
                     value={student.yearInProgram}
-                    onChange={handleChange}
                     placeholder="Enter year in program"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="mb-3">
@@ -112,8 +118,8 @@ const ViewStudentModal = ({
                     id="graduationYear"
                     name="graduationYear"
                     value={student.graduationYear}
-                    onChange={handleChange}
                     placeholder="Enter graduation year"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="mb-3">
@@ -126,8 +132,8 @@ const ViewStudentModal = ({
                     id="program"
                     name="program"
                     value={student.program}
-                    onChange={handleChange}
                     placeholder="Enter program"
+                    onChange={handleChange}
                   />
                 </div>
               </form>

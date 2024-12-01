@@ -351,6 +351,7 @@ def create_student():
 
 @routes.route('/api/students/<int:student_id>', methods=['PUT'])
 def edit_student(student_id):
+    print(f"Route matched for student ID: {student_id}")
     data = request.get_json()
     full_name = data.get('fullName')
     email = data.get('email')
@@ -366,7 +367,39 @@ def edit_student(student_id):
         return jsonify({"error": "Database connection failed"}), 500
 
     try:
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        # Check if student exists
+        cursor.execute("SELECT * FROM Student WHERE studentID = %s", (student_id,))
+        existing_student = cursor.fetchone()
+
+        if not existing_student:
+            return jsonify({"error": "Student not found"}), 404
+
+        # Debug: Print values and types
+        print("Existing student data:")
+        for key, value in existing_student.items():
+            print(f"{key}: {value} (type: {type(value)})")
+
+        print("New data from request:")
+        print(f"fullName: {full_name} (type: {type(full_name)})")
+        print(f"email: {email} (type: {type(email)})")
+        print(f"yearInProgram: {year_in_program} (type: {type(year_in_program)})")
+        print(f"graduationYear: {graduation_year} (type: {type(graduation_year)})")
+        print(f"program: {program} (type: {type(program)}) \n")
+
+        # Convert data types if necessary
+        year_in_program = int(year_in_program)
+        graduation_year = int(graduation_year)
+
+        # Check for identical data
+        if (existing_student['fullName'] == full_name and
+            existing_student['email'] == email and
+            existing_student['yearInProgram'] == year_in_program and
+            existing_student['graduationYear'] == graduation_year and
+            existing_student['program'] == program):
+            return jsonify({"message": "No changes were made to the student."}), 200
+
+        # Update the student
         query = """
         UPDATE Student
         SET fullName = %s, email = %s, yearInProgram = %s, graduationYear = %s, program = %s
@@ -374,15 +407,19 @@ def edit_student(student_id):
         """
         cursor.execute(query, (full_name, email, year_in_program, graduation_year, program, student_id))
         conn.commit()
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Student not found"}), 404
+
+        print(f"Rows affected: {cursor.rowcount}")
         return jsonify({"message": "Student updated successfully!"}), 200
     except Exception as e:
         conn.rollback()
+        print(f"Exception occurred: {e}")
         return jsonify({"error": f"Failed to update student: {str(e)}"}), 500
     finally:
         cursor.close()
         db.close_connection()
+
+
+
 
 @routes.route('/api/students/<int:student_id>', methods=['DELETE'])
 def delete_student(student_id):

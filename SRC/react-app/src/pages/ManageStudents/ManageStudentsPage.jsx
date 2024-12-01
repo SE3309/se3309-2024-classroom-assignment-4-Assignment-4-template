@@ -22,20 +22,66 @@ const ManageStudentsPage = () => {
     setIsModalOpen(true);
   };
 
-  const submitForm = (student) => {
-    console.log(isEditing ? "Updated Student" : "New Student");
-    closeModal();
+  const handleSubmitForm = async (student) => {
+    try {
+      if (isEditing) {
+        // Make an API call to update the student
+        const response = await axios.put(
+          `http://127.0.0.1:5000/api/students/${student.studentID}`,
+          student
+        );
+        console.log("Student updated:", response.data);
+      } else {
+        // Make an API call to create a new student
+        const response = await axios.post("http://127.0.0.1:5000/api/students", student);
+        console.log("New student created:", response.data);
+      }
+      // Refresh the student list after the operation
+      fetchStudents(query);
+      closeModal();
+    } catch (error) {
+      console.error("Error submitting form:", error.response?.data || error.message);
+    }
   };
 
-  const handleDelete = (student) => {
-    console.log("Deleting Student: ", student);
-  };
+  const handleSearch = (e) => {
+    e.preventDefault(); //prevent refresh
+    fetchStudents(query)
+  }
 
-  const fetchStudents = async (e) => {
-    e.preventDefault(); // Prevent a refresh
+  const handleDelete = async (student) => {
+    try {
+      // Confirm deletion with the user
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete ${student.fullName}?`
+      );
+      if (!confirmDelete) return;
+  
+      console.log("Deleting Student:", student);
+  
+      // API call to delete the student
+      const response = await axios.delete(
+        `http://127.0.0.1:5000/api/students/${student.studentID}`
+      );
+  
+      console.log("Student deleted successfully:", response.data);
+  
+      // Refresh the student list
+      await fetchStudents(query);
+    } catch (error) {
+      console.error(
+        "Error deleting student:",
+        error.response?.data || error.message
+      );
+      alert("Failed to delete the student. Please try again.");
+    }
+  };
+  
+
+  const fetchStudents = async (searchQuery = "") => {
     try {
       const response = await axios.get("http://127.0.0.1:5000/api/students", {
-        params: { student: query.trim() },
+        params: { student: searchQuery.trim() },
       });
       setStudents(response.data);
     } catch (error) {
@@ -51,7 +97,7 @@ const ManageStudentsPage = () => {
       <div className="container py-3 border-bottom">
         <div className="row align-items-center">
           <div className="col-md-8">
-            <form onSubmit={fetchStudents} className="d-flex">
+            <form onSubmit={handleSearch} className="d-flex">
               <input
                 type="text"
                 placeholder="Search by name or student number"
@@ -101,7 +147,7 @@ const ManageStudentsPage = () => {
       <ViewStudentModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onSave={submitForm}
+        onSave={handleSubmitForm}
         initialData={selectedStudent}
         isEditing={isEditing}
       />
