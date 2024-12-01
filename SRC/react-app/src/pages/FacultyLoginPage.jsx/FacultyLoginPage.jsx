@@ -17,12 +17,7 @@ const FacultyLoginPage = () => {
         try {
             const response = await AuthService.faculty_login(email, password);
             if (response.success) {
-                const userData = {
-                    email: email,
-                    role: 'Faculty',
-                    id: AuthService.getCurrentUserId()
-                };
-                login(userData);
+                login(response.user);
                 navigate('/home');
             } else {
                 setError(response.message || 'Login failed. Please try again.');
@@ -33,7 +28,7 @@ const FacultyLoginPage = () => {
     };
 
     return (
-        <div className="login-page">
+        <div className="faculty-login-page">
             <h2>Faculty Member Login</h2>
             <form onSubmit={handleLogin}>
                 <div className="form-group">
