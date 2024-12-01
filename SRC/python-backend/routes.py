@@ -416,3 +416,303 @@ def get_transcript(student_id):
         cursor.close()
         db.close_connection()
         print("Database connection closed")
+
+@routes.route('/api/students', methods=['GET'])
+def get_students_with_contacts():
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    search_query = request.args.get('student', '')
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # Search query
+        query = """
+        SELECT 
+            s.studentID,
+            s.email,
+            s.fullName,
+            s.yearInProgram,
+            s.graduationYear,
+            s.program,
+            c.phoneNumber,
+            c.cName AS contactName,
+            c.address,
+            c.postalCode
+        FROM 
+            Student s
+        LEFT JOIN 
+            EmergencyContact ec ON s.studentID = ec.studentID
+        LEFT JOIN 
+            Contact c ON ec.phoneNumber = c.phoneNumber
+        WHERE 
+            s.fullName LIKE %s OR s.studentID = %s
+        """
+        cursor.execute(query, (f"%{search_query}%", search_query))
+
+        # Fetch and organize results
+        rows = cursor.fetchall()
+        students = {}
+
+        # Organize data
+        for row in rows:
+            student_id = row['studentID']
+            if student_id not in students:
+                students[student_id] = {
+                    "studentID": student_id,
+                    "email": row["email"],
+                    "fullName": row["fullName"],
+                    "yearInProgram": row["yearInProgram"],
+                    "graduationYear": row["graduationYear"],
+                    "program": row["program"],
+                    "emergencyContacts": []
+                }
+            if row["phoneNumber"]:  # Add contact info if available
+                students[student_id]["emergencyContacts"].append({
+                    "phoneNumber": row["phoneNumber"],
+                    "contactName": row.get("contactName"),
+                    "address": row.get("address"),
+                    "postalCode": row.get("postalCode")
+                })
+
+        return jsonify(list(students.values())), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+
+
+@routes.route('/api/students', methods=['POST'])
+def create_student():
+    data = request.get_json()
+    full_name = data.get('fullName')
+    email = data.get('email')
+    year_in_program = data.get('yearInProgram')
+    graduation_year = data.get('graduationYear')
+    program = data.get('program')
+
+    if not all([full_name, email, year_in_program, graduation_year, program]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO Student (fullName, email, yearInProgram, graduationYear, program)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (full_name, email, year_in_program, graduation_year, program))
+        conn.commit()
+        return jsonify({"message": "Student created successfully!"}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to create student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/students/<int:student_id>', methods=['PUT'])
+def edit_student(student_id):
+    print(f"Route matched for student ID: {student_id}")
+    data = request.get_json()
+    full_name = data.get('fullName')
+    email = data.get('email')
+    year_in_program = data.get('yearInProgram')
+    graduation_year = data.get('graduationYear')
+    program = data.get('program')
+
+    if not all([full_name, email, year_in_program, graduation_year, program]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        # Check if student exists
+        cursor.execute("SELECT * FROM Student WHERE studentID = %s", (student_id,))
+        existing_student = cursor.fetchone()
+
+        if not existing_student:
+            return jsonify({"error": "Student not found"}), 404
+
+        # Debug: Print values and types
+        print("Existing student data:")
+        for key, value in existing_student.items():
+            print(f"{key}: {value} (type: {type(value)})")
+
+        print("New data from request:")
+        print(f"fullName: {full_name} (type: {type(full_name)})")
+        print(f"email: {email} (type: {type(email)})")
+        print(f"yearInProgram: {year_in_program} (type: {type(year_in_program)})")
+        print(f"graduationYear: {graduation_year} (type: {type(graduation_year)})")
+        print(f"program: {program} (type: {type(program)}) \n")
+
+        # Convert data types if necessary
+        year_in_program = int(year_in_program)
+        graduation_year = int(graduation_year)
+
+        # Check for identical data
+        if (existing_student['fullName'] == full_name and
+            existing_student['email'] == email and
+            existing_student['yearInProgram'] == year_in_program and
+            existing_student['graduationYear'] == graduation_year and
+            existing_student['program'] == program):
+            return jsonify({"message": "No changes were made to the student."}), 200
+
+        # Update the student
+        query = """
+        UPDATE Student
+        SET fullName = %s, email = %s, yearInProgram = %s, graduationYear = %s, program = %s
+        WHERE studentID = %s
+        """
+        cursor.execute(query, (full_name, email, year_in_program, graduation_year, program, student_id))
+        conn.commit()
+
+        print(f"Rows affected: {cursor.rowcount}")
+        return jsonify({"message": "Student updated successfully!"}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Exception occurred: {e}")
+        return jsonify({"error": f"Failed to update student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+
+
+
+@routes.route('/api/students/<int:student_id>', methods=['DELETE'])
+def delete_student(student_id):
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        query = "DELETE FROM Student WHERE studentID = %s"
+        cursor.execute(query, (student_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Student not found"}), 404
+        return jsonify({"message": "Student deleted successfully!"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to delete student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/contacts/<string:phone_number>', methods=['PUT'])
+def update_contact(phone_number):
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    # Get the request JSON data
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid or missing JSON data"}), 400
+
+    # Extract fields to be updated
+    contact_name = data.get('contactName')
+    address = data.get('address')
+    postal_code = data.get('postalCode')
+
+    # Ensure at least one field is provided
+    if not any([contact_name, address, postal_code]):
+        return jsonify({"error": "No fields to update provided"}), 400
+
+    try:
+        cursor = conn.cursor()
+        
+        # Build the update query dynamically based on the provided fields
+        update_fields = []
+        params = []
+
+        if contact_name is not None:
+            update_fields.append("cName = %s")
+            params.append(contact_name)
+        if address is not None:
+            update_fields.append("address = %s")
+            params.append(address)
+        if postal_code is not None:
+            update_fields.append("postalCode = %s")
+            params.append(postal_code)
+
+        # Add the phone number as the final parameter
+        params.append(phone_number)
+
+        # Construct the SQL query
+        query = f"""
+        UPDATE Contact
+        SET {', '.join(update_fields)}
+        WHERE phoneNumber = %s
+        """
+        
+        # Execute the query
+        cursor.execute(query, params)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Contact not found or no changes made"}), 404
+
+        return jsonify({"message": "Contact updated successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to update contact: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/emergency-contacts', methods=['DELETE'])
+def delete_emergency_contact():
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    # Get query parameters
+    student_id = request.args.get('studentID')
+    phone_number = request.args.get('phoneNumber')
+
+    # Validate input
+    if not student_id or not phone_number:
+        return jsonify({"error": "Both studentID and phoneNumber are required"}), 400
+
+    try:
+        cursor = conn.cursor()
+
+        # Construct the SQL query to delete the association
+        query = """
+        DELETE FROM EmergencyContact
+        WHERE studentID = %s AND phoneNumber = %s
+        """
+        
+        # Execute the query
+        cursor.execute(query, (student_id, phone_number))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "No matching EmergencyContact found"}), 404
+
+        return jsonify({"message": "EmergencyContact entry deleted successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to delete EmergencyContact: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
