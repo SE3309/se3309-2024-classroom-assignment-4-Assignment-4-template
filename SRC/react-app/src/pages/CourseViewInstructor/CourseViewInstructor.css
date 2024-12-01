@@ -1,0 +1,32 @@
+.instructor-info {
+    text-align: center;
+    margin-bottom: 40px;
+    background-color: #333; /* Dark background */
+    color: #fff; /* White text for contrast */
+    border-radius: 15px; /* Rounded edges */
+    padding: 20px; /* Padding inside the box */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    max-width: 800px; /* Limit the width for a neat look */
+    margin: 0 auto; /* Center the section */
+}
+
+.instructor-info h3 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.instructor-info p {
+    font-size: 1.1em;
+    margin: 10px 0;
+}
+
+.instructor-info strong {
+    font-weight: bold;
+}
+
+/* Optional: Add hover effect to make it interactive */
+.instructor-info:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Darker shadow on hover */
+    transform: translateY(-2px); /* Slight raise on hover */
+    transition: all 0.3s ease;
+}

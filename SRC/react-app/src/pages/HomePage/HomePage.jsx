@@ -42,7 +42,7 @@ const StudentDashboard = ({ user, handleCourseSearch, handleViewCourse, handleRe
   </>
 );
 
-const FacultyDashboard = ({ user }) => (
+const FacultyDashboard = ({ user, handleViewCourseInstructor }) => (
   <>
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
@@ -53,7 +53,10 @@ const FacultyDashboard = ({ user }) => (
     <div className="home-content">
       <div className="action-section">
         <h3 className="section-title">Faculty Dashboard</h3>
-        <p className="coming-soon-message">Faculty features coming soon...</p>
+        
+        <button className="action-button" onClick={() => handleViewCourseInstructor()}>
+          View My Courses
+        </button>
       </div>
     </div>
   </>
@@ -69,6 +72,9 @@ const HomePage = () => {
 
   const handleViewCourse = () => {
     navigate('/course-view');
+  };
+  const handleViewCourseInstructor = () => {
+    navigate('/course-view-instructor');
   };
 
   const handleRegisterUnregister = () => {
@@ -93,9 +99,13 @@ const HomePage = () => {
           handleRegisterUnregister={handleRegisterUnregister}
           handleViewCalendar={handleViewCalendar}
           handleViewTranscript={handleViewTranscript}
+          
         />
       ) : (
-        <FacultyDashboard user={user} />
+        <FacultyDashboard 
+        user={user} 
+        handleViewCourseInstructor={handleViewCourseInstructor}
+        />
       )}
     </div>
   );
