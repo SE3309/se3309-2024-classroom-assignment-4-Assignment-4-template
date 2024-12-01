@@ -13,7 +13,7 @@ import CourseView from './pages/CourseView/CourseView';
 import CourseViewInstructor from './pages/CourseViewInstructor/CourseViewInstructor';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ManageStudentsPage from "./pages/ManageStudents/ManageStudentsPage";
-
+import ModifyCourse from './pages/ModifyCourse/ModifyCourse';
 const App = () => {
   return (
     <UserProvider>
@@ -108,6 +108,17 @@ const App = () => {
                 <>
                   <Header />
                   <CourseViewInstructor />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/modify-course"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Header />
+                  <ModifyCourse />
                 </>
               </ProtectedRoute>
             }

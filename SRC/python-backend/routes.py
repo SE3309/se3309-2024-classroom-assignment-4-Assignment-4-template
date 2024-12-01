@@ -852,3 +852,159 @@ def get_faculty_courses(faculty_id):
     finally:
         cursor.close()
         db.close_connection()
+
+@routes.route('/api/faculty/courses', methods=['POST'])
+def add_faculty_course():
+    print("\n=== Starting Add Faculty Course Request ===")
+    conn = db.get_connection()
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+
+    data = request.get_json()
+    print(f"Received course data: {data}")
+    
+    required_fields = ['courseCode', 'courseName', 'credits', 'instructor', 'cyear']
+    
+    # Validate required fields
+    if not all(field in data for field in required_fields):
+        missing_fields = [field for field in required_fields if field not in data]
+        print(f"Error: Missing required fields - {missing_fields}")
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        cursor = conn.cursor()
+        
+        # Check if course details exist
+        print(f"Checking if course {data['courseCode']} exists in CourseDetails")
+        cursor.execute(
+            "SELECT courseCode FROM CourseDetails WHERE courseCode = %s",
+            (data['courseCode'],)
+        )
+        
+        if not cursor.fetchone():
+            print("Course details don't exist, creating new entry")
+            cursor.execute("""
+                INSERT INTO CourseDetails (courseCode, courseName, credits)
+                VALUES (%s, %s, %s)
+            """, (data['courseCode'], data['courseName'], data['credits']))
+            print("Course details created successfully")
+
+        # Insert into Course table
+        print("Adding course to Course table")
+        cursor.execute("""
+            INSERT INTO Course (courseCode, instructor, cyear)
+            VALUES (%s, %s, %s)
+        """, (data['courseCode'], data['instructor'], data['cyear']))
+
+        conn.commit()
+        print("=== Add Faculty Course Request Completed Successfully ===\n")
+        return jsonify({"message": "Course added successfully"}), 201
+
+    except Exception as e:
+        print(f"Error: Failed to add course - {str(e)}")
+        conn.rollback()
+        print("=== Add Faculty Course Request Failed ===\n")
+        return jsonify({"error": f"Failed to add course: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/faculty/courses/<course_code>', methods=['PUT'])
+def update_faculty_course(course_code):
+    print(f"\n=== Starting Update Faculty Course Request for {course_code} ===")
+    conn = db.get_connection()
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+
+    data = request.get_json()
+    print(f"Received update data: {data}")
+    
+    required_fields = ['courseName', 'credits']
+    if not all(field in data for field in required_fields):
+        missing_fields = [field for field in required_fields if field not in data]
+        print(f"Error: Missing required fields - {missing_fields}")
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        cursor = conn.cursor()
+        
+        print("Updating CourseDetails")
+        cursor.execute("""
+            UPDATE CourseDetails 
+            SET courseName = %s, credits = %s
+            WHERE courseCode = %s
+        """, (data['courseName'], data['credits'], course_code))
+
+        if cursor.rowcount == 0:
+            print(f"Error: Course {course_code} not found")
+            return jsonify({"error": "Course not found"}), 404
+
+        conn.commit()
+        print("=== Update Faculty Course Request Completed Successfully ===\n")
+        return jsonify({"message": "Course updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error: Failed to update course - {str(e)}")
+        conn.rollback()
+        print("=== Update Faculty Course Request Failed ===\n")
+        return jsonify({"error": f"Failed to update course: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/faculty/courses/<course_code>/<int:cyear>', methods=['DELETE'])
+def delete_faculty_course(course_code, cyear):
+    print(f"\n=== Starting Delete Faculty Course Request for {course_code}, Year {cyear} ===")
+    conn = db.get_connection()
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        
+        print("Deleting course from Course table")
+        cursor.execute("""
+            DELETE FROM Course 
+            WHERE courseCode = %s AND cyear = %s
+        """, (course_code, cyear))
+
+        if cursor.rowcount == 0:
+            print(f"Error: Course {course_code} for year {cyear} not found")
+            return jsonify({"error": "Course not found"}), 404
+
+        # Check if this was the last instance
+        print("Checking if this was the last instance of the course")
+        cursor.execute(
+            "SELECT COUNT(*) FROM Course WHERE courseCode = %s",
+            (course_code,)
+        )
+        count = cursor.fetchone()[0]
+        print(f"Remaining instances of course: {count}")
+
+        # If last instance, delete from CourseDetails
+        if count == 0:
+            print("No instances remain, deleting from CourseDetails")
+            cursor.execute(
+                "DELETE FROM CourseDetails WHERE courseCode = %s",
+                (course_code,)
+            )
+
+        conn.commit()
+        print("=== Delete Faculty Course Request Completed Successfully ===\n")
+        return jsonify({"message": "Course deleted successfully"}), 200
+
+    except Exception as e:
+        print(f"Error: Failed to delete course - {str(e)}")
+        conn.rollback()
+        print("=== Delete Faculty Course Request Failed ===\n")
+        return jsonify({"error": f"Failed to delete course: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
+
