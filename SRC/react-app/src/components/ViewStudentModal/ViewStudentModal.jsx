@@ -65,7 +65,7 @@ const ViewStudentModal = ({
               ></button>
             </div>
             <div className="modal-body">
-              <form>
+              <form style={{all: "unset"}} /*Remove Global Styles */>
                 <div className="mb-3">
                   <label htmlFor="fullName" className="form-label">
                     Full Name
