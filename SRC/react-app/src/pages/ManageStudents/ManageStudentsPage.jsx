@@ -156,18 +156,12 @@ const ManageStudentsPage = () => {
 
       //Handle additions
       for (const contact of added) {
-        // Create the contact
-        await axios.post(`http://127.0.0.1:5000/api/contacts`, {
-          phoneNumber: contact.phoneNumber,
-          contactName: contact.contactName,
-          address: contact.address,
-          postalCode: contact.postalCode,
-        });
-
-        // Link the contact to the student
-        await axios.post(`http://127.0.0.1:5000/api/emergencyContacts`, {
+        await axios.post(`http://127.0.0.1:5000/api/emergency-contacts`, {
           studentID: selectedStudent.studentID,
           phoneNumber: contact.phoneNumber,
+          postalCode: contact.postalCode,
+          address: contact.address,
+          contactName: contact.contactName
         });
       }
 
@@ -201,7 +195,11 @@ const ManageStudentsPage = () => {
       <div className="container py-3 border-bottom">
         <div className="row align-items-center">
           <div className="col-md-8">
-            <form onSubmit={handleSearch} className="d-flex">
+            <form
+              style={{ all: "unset" /*Remove Global styles */ }}
+              onSubmit={handleSearch}
+              className="d-flex"
+            >
               <input
                 type="text"
                 placeholder="Search by name or student number"

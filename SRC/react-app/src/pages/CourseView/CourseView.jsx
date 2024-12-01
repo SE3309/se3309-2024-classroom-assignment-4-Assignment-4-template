@@ -10,6 +10,9 @@ function CourseView() {
     const [hasSearched, setHasSearched] = useState(false); 
     const [expandedCourse, setExpandedCourse] = useState(null); 
     const [profInfo, setProfInfo] = useState([]); 
+    
+    const [no, resNo] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const handleSearch = async (query) => {
         const { noOfResults, search } = query;
@@ -18,7 +21,8 @@ function CourseView() {
             setError("Please input a course name or code.")
             return;
         }
-
+        
+        resNo(noOfResults);
         setHasSearched(true) 
         try {
             const response = await axios.get("/api/student/view-course", {
@@ -26,7 +30,8 @@ function CourseView() {
             });
 
             if (response.status === 200) {
-                setResults(response.data)
+                setResults(response.data);
+                setCurrentPage(1);
             } else {
                 setError("There was an issue finding you course.")
             }
@@ -55,8 +60,24 @@ function CourseView() {
         }
     }
 
+    const indexOfLastResult = currentPage * no;
+    const indexOfFirstResult = indexOfLastResult - no;
+    const currentResults = results.slice(indexOfFirstResult, indexOfLastResult);
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    }
+
+    const nextPage = () => {
+        if (currentPage < Math.ceil(results.length / no)) {
+            setCurrentPage(currentPage + 1);
+        }
+    }
+
   return (
-    <div className='course-view-container'>
+    <>
         <div className="back-button">
             <Link to="/home">
                 <button>Back to Home</button>
@@ -73,7 +94,7 @@ function CourseView() {
                 <>
                 <h1 className='list-title'>YOUR COURSES ARE:</h1>
                 <ul>
-                    {results.map((course, idx) => (
+                    {currentResults.map((course, idx) => (
                         <li key={idx}>
                             <h3>{course.courseName}</h3>
                             <p><strong>Course Code: </strong>{course.courseCode}</p>
@@ -102,6 +123,40 @@ function CourseView() {
                         </li>
                     ))}
                 </ul>
+
+                {/* Pagination controls */}
+                <div className='pagination'>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '2px',
+                            }}
+                        >
+                            {1}
+                        </div>
+                        <button onClick={prevPage}>Previous</button>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '5px',
+                            }}
+                        >
+                            {currentPage}
+                        </div>
+                        <button onClick={nextPage}>Next</button>
+                        <div
+                            style={{
+                                border: 'solid 2px #345',
+                                padding: '5px 10px',
+                                borderRadius: '2px',
+                            }}
+                        >
+                            {Math.ceil(results.length / no)}
+                        </div>
+                    </div>
+
                 </>
             ) : (
             <h3>{error}</h3>
@@ -110,7 +165,7 @@ function CourseView() {
         <h3>Search using your studentID to see your courses.</h3>
         )}
         </div>
-    </div>
+    </>
   )
 }
 

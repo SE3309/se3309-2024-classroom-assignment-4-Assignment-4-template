@@ -6,6 +6,7 @@
     justify-content: center;
     color: var(--text-secondary);
     font-family: inherit;
+    background-color: transparent;
 }
 
 /* Back button container */
@@ -79,7 +80,7 @@
 
 /* Course details */
 .results-container li h3 {
-    margin: 0 0 10px;
+    margin: 0 auto;
     font-size: 20px;
     color: var(--primary-color);
 }
