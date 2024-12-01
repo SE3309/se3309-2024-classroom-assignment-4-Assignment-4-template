@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function UserBookingHistory() {
-    const [userID, setUserID] = useState('');
     const [bookings, setBookings] = useState([]);
     const [error, setError] = useState(null);
+    const token = localStorage.getItem('token')
 
-    const handleFetchHistory = async (e) => {
-        e.preventDefault();
-        /*
+    String.prototype.toTitleCase = function () {
+        return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();});
+    };
+
+    const handleFetchHistory = async () => {
+        
         try {
-            const response = await fetch(`/api/booking-history?userID=${userID}`);
+            const response = await fetch(`/api/booking-history`, {
+                headers: {
+                    authorization: `Bearer ${token}`
+                }
+            });
             if (!response.ok) throw new Error('Failed to fetch booking history');
             const data = await response.json();
             setBookings(data);
@@ -18,28 +25,15 @@ function UserBookingHistory() {
             setError(err.message);
             setBookings([]);
         }
-        */
-       
-        const data = [
-            {
-                bookingID: 0,
-                status: 'Complete',
-                bookingDate: 'Friday',
-                cost: '$1,000,000'
-            },
-            {
-                bookingID: 1,
-                status: 'Complete',
-                bookingDate: 'Friday',
-                cost: '$1,000,000'
-            }
-        ];
-        setBookings(data);
     };
+
+    useEffect(() => {
+        handleFetchHistory();
+    }, [bookings]);
 
     return (
         <div className='container'>
-            <h2>User Booking History</h2>
+            {/* <h2>User Booking History</h2>
             <div className='userInput'>
                 <form onSubmit={handleFetchHistory}>
                     <input
@@ -53,20 +47,34 @@ function UserBookingHistory() {
                         <button type='submit'>Fetch Booking History</button>
                     </div>
                 </form>
-            </div>
+            </div> */}
 
             {error && <p>Error: {error}</p>}
 
             {bookings.length > 0 && (
                 <div>
-                    <h3>Booking History</h3>
+                    <h2>User Booking History</h2>
                     <ul>
                         {bookings.map((booking) => (
                             <li key={booking.bookingID}>
+                                {/* Render differently if flight vs hotel. For purpose of demo, this will always be a hotel. */}
                                 <p><strong>Booking ID:</strong> {booking.bookingID}</p>
-                                <p><strong>Status:</strong> {booking.status}</p>
-                                <p><strong>Date:</strong> {booking.bookingDate}</p>
-                                <p><strong>Cost:</strong> {booking.cost}</p>
+                                <p><strong>Status:</strong> {(booking.bookingStatus).toTitleCase()}</p>
+                                <p><strong>Date:</strong> {new Date(booking.bookingDate).toLocaleDateString()}</p>
+                                <p><strong>Cost:</strong> ${booking.cost}</p>
+                                {booking.flightID && (
+                                    <div>
+                                        <p><strong>Departure Airport:</strong> {booking.departureAirport}</p>
+                                        <p><strong>Arrival Airport:</strong> {booking.arrivalAirport}</p>
+                                        <p><strong>Airline:</strong> {booking.airline}</p>
+                                    </div>
+                                )}
+                                {booking.hotelID && (
+                                    <div>
+                                        <p><strong>Hotel:</strong> {booking.hotelName}</p>
+                                    </div>
+                                )}
+                                
                             </li>
                         ))}
                     </ul>

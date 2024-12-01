@@ -58,6 +58,47 @@ db.connect((err) => {
   }
 });
 
+
+// booking history fetch
+app.get(`/api/booking-history`, passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { userID } = req.user;
+  const sql = "SELECT b.cost, b.bookingID, b.bookingStatus, b.bookingDate, f.flightID, f.departureAirport, f.arrivalAirport, a.name, h.hotelID, h.hotelName, p.amount AS paymentAmount "+
+              "FROM Booking b "+
+              "LEFT JOIN FlightBooking fb "+
+              "ON b.bookingID = fb.bookingID "+
+              "LEFT JOIN Flight f "+
+              "ON fb.flightID = f.flightID "+
+              "LEFT JOIN HotelBooking hb "+
+              "ON b.bookingID = hb.bookingID "+
+              "LEFT JOIN Hotel h "+
+              "ON hb.hotelID = h.hotelID "+
+              "LEFT JOIN Airline a "+
+              "ON f.airlineID = a.airlineID "+
+              "LEFT JOIN Payment p "+
+              "ON b.bookingID = p.bookingID WHERE b.userID = ?";
+  db.query(sql, [userID], (error, results) => {
+    if (error) return res.status(500).json({message: "Database error retrieving booking history."});
+    res.status(200).json(results)
+  })
+
+})
+
+// Update points
+app.put('/api/points', passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { userID } = req.user;
+  const { points } = req.body;
+  
+  if (isNaN(points)) return res.status(400).json({message: "Points must be a number."});
+
+  const sql = "UPDATE User SET points = points + ? WHERE userID = ?";
+
+  db.query(sql, [points, userID], err => {
+    if (err) return res.status(500).json({message: "Database error updating points."})
+
+    res.status(200).json({message: "Points updated successfully.", success: true});
+  })
+} )
+
 // registration route
 app.post("/api/register", (req, res) => {
   const { name, email, password } = req.body;
