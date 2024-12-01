@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SearchBar from '../../components/SearchBar/SearchBar'
-import axios, { toFormData } from 'axios'; 
+import axios from 'axios'; 
 import './CourseView.css';
 
 function CourseView() {
