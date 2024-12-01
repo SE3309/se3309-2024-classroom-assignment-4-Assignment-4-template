@@ -50,8 +50,6 @@ function CourseView() {
         }
     }
 
-    console.log("prof info is: ", profInfo)
-
   return (
     <div className='course-view-container'>
         <div className="back-button">
