@@ -66,6 +66,18 @@ const HomePage = () => {
           </button>
           
         </div>
+
+        <div className="action-section">
+          <h3 className="section-title">Admin Powers</h3>
+
+          <button
+            className="manage-students"
+            onClick={() => navigate("/add-event")}
+          >
+            Manage Students
+          </button>
+          
+        </div>
       </div>
     </div>
   );
