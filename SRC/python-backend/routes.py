@@ -122,7 +122,7 @@ def faculty_login():
             'facultyID': user['facultyID'],
             'email': user['email'],
             'fullName': user['fullName'],
-            'role': 'Faculty',  # Explicitly set role
+            'role': 'Admin' if user['role'] == 'Admin' else 'Faculty',  # Explicitly set role
             'officeNo': user['officeNo'],
             'contactInfo': user['contactInfo'],
             'departmentID': user['departmentID']
