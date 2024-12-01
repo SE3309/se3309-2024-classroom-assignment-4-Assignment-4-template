@@ -29,7 +29,7 @@ function UserBookingHistory() {
 
     useEffect(() => {
         handleFetchHistory();
-    })
+    }, [bookings]);
 
     return (
         <div className='container'>

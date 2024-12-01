@@ -83,6 +83,22 @@ app.get(`/api/booking-history`, passport.authenticate("jwt", { session: false })
 
 })
 
+// Update points
+app.put('/api/points', passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { userID } = req.user;
+  const { points } = req.body;
+  
+  if (isNaN(points)) return res.status(400).json({message: "Points must be a number."});
+
+  const sql = "UPDATE User SET points = points + ? WHERE userID = ?";
+
+  db.query(sql, [points, userID], err => {
+    if (err) return res.status(500).json({message: "Database error updating points."})
+
+    res.status(200).json({message: "Points updated successfully.", success: true});
+  })
+} )
+
 // registration route
 app.post("/api/register", (req, res) => {
   const { name, email, password } = req.body;

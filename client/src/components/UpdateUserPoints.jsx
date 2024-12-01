@@ -1,31 +1,32 @@
 import React, { useState } from 'react';
 
 function UpdateUserPoints() {
-    const [userID, setUserID] = useState('');
+    const token = localStorage.getItem('token');
     const [points, setPoints] = useState('');
     const [confirmation, setConfirmation] = useState(null);
 
     const handleUpdatePoints = async (e) => {
         e.preventDefault();
 
-        /*
         try {
-            const response = await fetch('/api/update-user-points', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userID, points }),
+            const response = await fetch('/api/points', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ points }),
             });
             const data = await response.json();
             setConfirmation(data);
         } catch (err) {
-            setConfirmation({ success: false, message: 'Error updating points' });
+            setConfirmation({ success: false, message: "Failed to update points." });
         }
-        */
 
         // TEST DATA
-        const data = {
-            success: true
-        };
+        // const data = {
+        //     success: true
+        // };
         setConfirmation(data);
     };
 
@@ -34,16 +35,16 @@ function UpdateUserPoints() {
             <h2>Update User Points</h2>
             <div className='userInput'>
                 <form onSubmit={handleUpdatePoints}>
-                    <input
+                    {/* <input
                         type="text"
                         placeholder="User ID"
                         value={userID}
                         onChange={(e) => setUserID(e.target.value)}
                         required
-                    />
+                    /> */}
                     <input
                         type="number"
-                        placeholder="Points to Add/Subtract"
+                        placeholder="Points to Add"
                         value={points}
                         onChange={(e) => setPoints(e.target.value)}
                         required
@@ -58,7 +59,7 @@ function UpdateUserPoints() {
             {confirmation && (
                 <p>
                     {confirmation.success
-                        ? `Points updated successfully for User ID ${userID}.`
+                        ? `${confirmation.message}`
                         : `Error: ${confirmation.message}`}
                 </p>
             )}
