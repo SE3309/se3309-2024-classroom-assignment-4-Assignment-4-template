@@ -275,3 +275,132 @@ def delete_calendar_event(event_id):
         db.close_connection()
 
     return jsonify({"message": "Event deleted successfully!"}), 200
+
+# Get students matching query
+@routes.route('/api/students', methods=['GET'])
+def get_all_students():
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        # Get the 'student' query parameter
+        student_query = request.args.get('student')  # Capture the query parameter 'student'
+        
+        if student_query:
+            # Filter by studentID if the 'student' query parameter is provided
+            query = """
+            SELECT studentID, email, fullName, yearInProgram, graduationYear, program
+            FROM Student
+            WHERE fullName LIKE %s OR studentID = %s
+            """
+            cursor.execute(query, (f"{student_query}%", student_query,))
+        else:
+            # Return all students if no filter is applied
+            query = """
+            SELECT studentID, email, fullName, yearInProgram, graduationYear, program
+            FROM Student
+            """
+            cursor.execute(query)
+
+        result = cursor.fetchall()
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+    if not result:
+        return jsonify({"error": "No students found"}), 404
+
+    return jsonify(result)
+
+@routes.route('/api/students', methods=['POST'])
+def create_student():
+    data = request.get_json()
+    full_name = data.get('fullName')
+    email = data.get('email')
+    year_in_program = data.get('yearInProgram')
+    graduation_year = data.get('graduationYear')
+    program = data.get('program')
+
+    if not all([full_name, email, year_in_program, graduation_year, program]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO Student (fullName, email, yearInProgram, graduationYear, program)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (full_name, email, year_in_program, graduation_year, program))
+        conn.commit()
+        return jsonify({"message": "Student created successfully!"}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to create student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/students/<int:student_id>', methods=['PUT'])
+def edit_student(student_id):
+    data = request.get_json()
+    full_name = data.get('fullName')
+    email = data.get('email')
+    year_in_program = data.get('yearInProgram')
+    graduation_year = data.get('graduationYear')
+    program = data.get('program')
+
+    if not all([full_name, email, year_in_program, graduation_year, program]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        query = """
+        UPDATE Student
+        SET fullName = %s, email = %s, yearInProgram = %s, graduationYear = %s, program = %s
+        WHERE studentID = %s
+        """
+        cursor.execute(query, (full_name, email, year_in_program, graduation_year, program, student_id))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Student not found"}), 404
+        return jsonify({"message": "Student updated successfully!"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to update student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+
+@routes.route('/api/students/<int:student_id>', methods=['DELETE'])
+def delete_student(student_id):
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        query = "DELETE FROM Student WHERE studentID = %s"
+        cursor.execute(query, (student_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Student not found"}), 404
+        return jsonify({"message": "Student deleted successfully!"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to delete student: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()

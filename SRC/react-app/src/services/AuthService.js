@@ -1,53 +1,53 @@
 const AuthService = {
-    login: async (email, password) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+  login: async (email, password) => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Login failed');
-            }
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
+      }
 
-            const data = await response.json();
-            localStorage.setItem('token', data.token); // Store token in localStorage
-            return { success: true };
-        } catch (err) {
-            return { success: false, message: err.message };
-        }
-    },
+      const data = await response.json();
+      localStorage.setItem("token", data.token); // Store token in localStorage
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
 
-    faculty_login: async (email, password) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/faculty/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+  faculty_login: async (email, password) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/faculty/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Login failed');
-            }
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
+      }
 
-            const data = await response.json();
-            localStorage.setItem('token', data.token); // Store token in localStorage
-            return { success: true };
-        } catch (err) {
-            return { success: false, message: err.message };
-        }
-    },
+      const data = await response.json();
+      localStorage.setItem("token", data.token); // Store token in localStorage
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
 
-    logout: () => {
-        localStorage.removeItem('token');
-    },
+  logout: () => {
+    localStorage.removeItem("token");
+  },
 
-    isAuthenticated: () => {
-        return !!localStorage.getItem('token'); // Check for a token
-    },
+  isAuthenticated: () => {
+    return !!localStorage.getItem("token"); // Check for a token
+  },
 };
 
 export default AuthService;

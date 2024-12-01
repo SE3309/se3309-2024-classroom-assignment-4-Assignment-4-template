@@ -4,11 +4,12 @@ import HomePage from './pages/HomePage/HomePage';
 import StudentLoginPage from './pages/StudentLoginPage/StudentLoginPage';
 import ViewCalendarPage from './pages/Calendar/ViewCalendarPage/ViewCalendarPage';
 import AddCalendarPage from './pages/Calendar/AddCalendarPage/AddCalendarPage';
-import Example from './pages/Example/Example';
 import LaunchPage from './pages/LaunchPage/LaunchPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header/Header';
 import FacultyLoginPage from './pages/FacultyLoginPage.jsx/FacultyLoginPage';
+import ManageStudentsPage from './pages/ManageStudents/ManageStudentsPage';
+
 
 
 const App = () => {
@@ -55,12 +56,11 @@ const App = () => {
                     }
                 />
                 <Route
-                    path="/example"
+                    path="/manage-students"
                     element={
                         <ProtectedRoute>
                             <>
-                                <Header />
-                                <Example />
+                                <ManageStudentsPage />
                             </>
                         </ProtectedRoute>
                     }
