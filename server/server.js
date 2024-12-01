@@ -434,6 +434,109 @@ app.get(
     });
   }
 );
+//cancel bookings for a user
+app.post(
+  "/api/cancel-booking",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { bookingID } = req.body;
+    const { userID } = req.user;
+
+    if (!bookingID) {
+      return res.status(400).json({ success: false, message: "Booking ID is required" });
+    }
+
+    const checkBookingQuery = `
+      SELECT * FROM Booking
+      WHERE bookingID = ? AND userID = ?;
+    `;
+
+    db.query(checkBookingQuery, [bookingID, userID], (err, results) => {
+      if (err) {
+        console.error("Error finding booking:", err);
+        return res.status(500).json({ success: false, message: "Error finding booking" });
+      }
+
+      if (results.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: "Booking not found or you are not authorized to cancel this booking",
+        });
+      }
+
+      const cancelBookingQuery = `
+        UPDATE Booking
+        SET bookingStatus = 'canceled'
+        WHERE bookingID = ?;
+      `;
+
+      db.query(cancelBookingQuery, [bookingID], (err, results) => {
+        if (err) {
+          console.error("Error canceling booking:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Error canceling booking.",
+          });
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "Your booking was successfully canceled!",
+        });
+      });
+    });
+  }
+);
+
+//Check Available Flights For User
+app.post(
+  "/api/check-available-flights",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { departureAirport, arrivalAirport, startDate, endDate } = req.body;
+
+    if (!departureAirport || !arrivalAirport || !startDate || !endDate) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const query = `
+      SELECT 
+        f.flightID, 
+        al.name AS airlineName, 
+        f.departureTime, 
+        f.arrivalTime, 
+        f.price
+      FROM Flight f
+      JOIN Airline al ON f.airlineID = al.airlineID
+      WHERE f.departureAirport = ? 
+        AND f.arrivalAirport = ? 
+        AND DATE(f.departureTime) >= DATE(?) 
+        AND DATE(f.arrivalTime) <= DATE(?);
+    `;
+
+    const params = [departureAirport, arrivalAirport, startDate, endDate];
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error("Error fetching flights:", err);
+        return res.status(500).json({ error: "Error fetching flights" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "No flights available for the selected dates." });
+      }
+
+      res.status(200).json(results);
+    });
+  }
+);
+
+
+
+
+
+
+
 
 // set port
 const PORT = process.env.PORT || 3001;
