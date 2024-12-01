@@ -146,8 +146,8 @@ function CheckAvailableFlights() {
               <li key={flight.flightID}>
                 <p><strong>Flight ID:</strong> {flight.flightID}</p>
                 <p><strong>Airline:</strong> {flight.airlineName}</p>
-                <p><strong>Departure:</strong> {flight.departureTime}</p>
-                <p><strong>Arrival:</strong> {flight.arrivalTime}</p>
+                <p><strong>Departure:</strong> {new Date(flight.departureTime).toLocaleString()}</p>
+                <p><strong>Arrival:</strong> {new Date(flight.arrivalTime).toLocaleString()}</p>
                 <p><strong>Price:</strong> ${flight.price}</p>
               </li>
             ))}
