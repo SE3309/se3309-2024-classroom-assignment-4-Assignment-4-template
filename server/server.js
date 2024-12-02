@@ -48,7 +48,6 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-
 // Connect to the database
 db.connect((err) => {
   if (err) {
@@ -148,31 +147,48 @@ app.post("/api/add-review", (req, res) => {
   const { userID, airlineID, hotelID, rating, reviewComment } = req.body;
 
   if (!userID || !rating || !reviewComment) {
-    return res.status(400).json({ error: "userID, rating, and reviewComment are required" });
+    return res
+      .status(400)
+      .json({ error: "userID, rating, and reviewComment are required" });
   }
 
   if (!airlineID && !hotelID) {
-    return res.status(400).json({ error: "At least one of airlineID and hotelID are required" });
+    return res
+      .status(400)
+      .json({ error: "At least one of airlineID and hotelID are required" });
   }
 
   if (airlineID && hotelID) {
-    return res.status(400).json({ error: "Only one of airline or hotel can be chosen" });
+    return res
+      .status(400)
+      .json({ error: "Only one of airline or hotel can be chosen" });
   }
-
 
   const query = `
     INSERT INTO Review (userID, airlineID, hotelID, rating, reviewComment, dateCreated)
     VALUES (?, ?, ?, ?, ?, CAST(NOW() AS DATE))
   `;
 
-  const params = [userID, airlineID || null, hotelID || null, rating, reviewComment,];
-
+  const params = [
+    userID,
+    airlineID || null,
+    hotelID || null,
+    rating,
+    reviewComment,
+  ];
 
   db.query(query, params, (err, results) => {
     if (err) {
-      return res.status(500).json({ error: "Error adding review" , details: err.message});
+      return res
+        .status(500)
+        .json({ error: "Error adding review", details: err.message });
     }
-    res.status(201).json({ message: "Review added successfully", reviewID: results.insertId });
+    res
+      .status(201)
+      .json({
+        message: "Review added successfully",
+        reviewID: results.insertId,
+      });
   });
 });
 
@@ -181,11 +197,15 @@ app.post("/api/view-rating", (req, res) => {
   const { airlineID, hotelID } = req.body;
 
   if (!airlineID && !hotelID) {
-    return res.status(400).json({ error: "Provide either an airlineID or hotelID" });
+    return res
+      .status(400)
+      .json({ error: "Provide either an airlineID or hotelID" });
   }
 
   if (airlineID && hotelID) {
-    return res.status(400).json({ error: "Provide just 1 of an airlineID or hotelID" });
+    return res
+      .status(400)
+      .json({ error: "Provide just 1 of an airlineID or hotelID" });
   }
 
   const query = `
@@ -203,7 +223,9 @@ app.post("/api/view-rating", (req, res) => {
     }
 
     if (results.length === 0 || results[0].averageRating === null) {
-      return res.status(404).json({ error: "No reviews found for the given ID" });
+      return res
+        .status(404)
+        .json({ error: "No reviews found for the given ID" });
     }
 
     res.status(200).json({ averageRating: results[0].averageRating });
@@ -443,7 +465,9 @@ app.post(
     const { userID } = req.user;
 
     if (!bookingID) {
-      return res.status(400).json({ success: false, message: "Booking ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Booking ID is required" });
     }
 
     const checkBookingQuery = `
@@ -454,13 +478,16 @@ app.post(
     db.query(checkBookingQuery, [bookingID, userID], (err, results) => {
       if (err) {
         console.error("Error finding booking:", err);
-        return res.status(500).json({ success: false, message: "Error finding booking" });
+        return res
+          .status(500)
+          .json({ success: false, message: "Error finding booking" });
       }
 
       if (results.length === 0) {
         return res.status(403).json({
           success: false,
-          message: "Booking not found or you are not authorized to cancel this booking",
+          message:
+            "Booking not found or you are not authorized to cancel this booking",
         });
       }
 
@@ -493,9 +520,9 @@ app.post(
   "/api/check-available-flights",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const { departureAirport, arrivalAirport, startDate, endDate } = req.body;
+    const { airline, startDate, endDate } = req.body;
 
-    if (!departureAirport || !arrivalAirport || !startDate || !endDate) {
+    if (!airline || !startDate || !endDate) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -508,13 +535,13 @@ app.post(
         f.price
       FROM Flight f
       JOIN Airline al ON f.airlineID = al.airlineID
-      WHERE f.departureAirport = ? 
-        AND f.arrivalAirport = ? 
+      WHERE al.name = ? 
         AND DATE(f.departureTime) >= DATE(?) 
-        AND DATE(f.arrivalTime) <= DATE(?);
+        AND DATE(f.arrivalTime) <= DATE(?)
+      ORDER BY ABS(TIMESTAMPDIFF(SECOND, DATE(f.departureTime), DATE(?)));
     `;
 
-    const params = [departureAirport, arrivalAirport, startDate, endDate];
+    const params = [airline, startDate, endDate, startDate];
 
     db.query(query, params, (err, results) => {
       if (err) {
@@ -523,7 +550,9 @@ app.post(
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ message: "No flights available for the selected dates." });
+        return res
+          .status(404)
+          .json({ message: "No flights available for the selected dates." });
       }
 
       res.status(200).json(results);
@@ -531,12 +560,26 @@ app.post(
   }
 );
 
+// route to fetch airline names
+app.get(
+  "/api/airlines",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const query = `
+      SELECT DISTINCT name 
+      FROM Airline;
+    `;
 
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error fetching airlines:", err);
+        return res.status(500).json({ error: "Error fetching airlines" });
+      }
 
-
-
-
-
+      res.status(200).json(results);
+    });
+  }
+);
 
 // set port
 const PORT = process.env.PORT || 3001;
