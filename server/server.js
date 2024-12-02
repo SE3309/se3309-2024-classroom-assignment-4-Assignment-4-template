@@ -48,7 +48,6 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-
 // Connect to the database
 db.connect((err) => {
   if (err) {
@@ -57,6 +56,57 @@ db.connect((err) => {
     console.log("Connected to the MySQL database");
   }
 });
+
+
+// booking history fetch
+app.get(`/api/booking-history`, passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { userID } = req.user;
+  const sql = "SELECT b.cost, b.bookingID, b.bookingStatus, b.bookingDate, f.flightID, f.departureAirport, f.arrivalAirport, a.name, h.hotelID, h.hotelName, p.amount AS paymentAmount "+
+              "FROM Booking b "+
+              "LEFT JOIN FlightBooking fb "+
+              "ON b.bookingID = fb.bookingID "+
+              "LEFT JOIN Flight f "+
+              "ON fb.flightID = f.flightID "+
+              "LEFT JOIN HotelBooking hb "+
+              "ON b.bookingID = hb.bookingID "+
+              "LEFT JOIN Hotel h "+
+              "ON hb.hotelID = h.hotelID "+
+              "LEFT JOIN Airline a "+
+              "ON f.airlineID = a.airlineID "+
+              "LEFT JOIN Payment p "+
+              "ON b.bookingID = p.bookingID WHERE b.userID = ?";
+  db.query(sql, [userID], (error, results) => {
+    if (error) return res.status(500).json({message: "Database error retrieving booking history."});
+    res.status(200).json(results)
+  })
+
+})
+
+// Update points
+app.put('/api/points', passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { userID } = req.user;
+  const { points } = req.body;
+  
+  if (isNaN(points)) return res.status(400).json({message: "Points must be a number."});
+
+  const sql = "UPDATE User SET points = points + ? WHERE userID = ?";
+
+  db.query(sql, [points, userID], err => {
+    if (err) return res.status(500).json({message: "Database error updating points."})
+
+    res.status(200).json({message: "Points updated successfully.", success: true});
+  })
+} )
+
+// get points
+app.get('/api/points', passport.authenticate("jwt", {session: false}), (req, res) => {
+  const { userID } = req.user;
+  const sql = "SELECT points FROM User WHERE userID = ?";
+  db.query(sql, [userID], (err, result) => {
+    if (err) return res.status(500).json({message: "Database error fetching user points."});
+    res.status(200).json(result)
+  })
+})
 
 // registration route
 app.post("/api/register", (req, res) => {
@@ -231,7 +281,6 @@ app.post("/api/add-review",passport.authenticate("jwt", { session: false }), asy
 );
 
 
-
 //to view reviews
 app.get("/api/reviews", passport.authenticate("jwt", { session: false }), (req, res) => {
     const { userID } = req.user;
@@ -263,8 +312,7 @@ app.get("/api/reviews", passport.authenticate("jwt", { session: false }), (req, 
 
       res.status(200).json(results);
     });
-  }
-);
+  });
 
 
 //Functionality to view the average rating for a hotel or airline
@@ -334,7 +382,9 @@ app.post("/api/view-rating", async (req, res) => {
     }
 
     if (results.length === 0 || results[0].averageRating === null) {
-      return res.status(404).json({ error: "No reviews found for the given ID" });
+      return res
+        .status(404)
+        .json({ error: "No reviews found for the given ID" });
     }
 
     res.status(200).json({ averageRating: results[0].averageRating });
@@ -583,6 +633,130 @@ app.get(
         return res.status(500).send(`Error fetching bookings: ${err}`);
       }
       res.json(results);
+    });
+  }
+);
+//cancel bookings for a user
+app.post(
+  "/api/cancel-booking",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { bookingID } = req.body;
+    const { userID } = req.user;
+
+    if (!bookingID) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Booking ID is required" });
+    }
+
+    const checkBookingQuery = `
+      SELECT * FROM Booking
+      WHERE bookingID = ? AND userID = ?;
+    `;
+
+    db.query(checkBookingQuery, [bookingID, userID], (err, results) => {
+      if (err) {
+        console.error("Error finding booking:", err);
+        return res
+          .status(500)
+          .json({ success: false, message: "Error finding booking" });
+      }
+
+      if (results.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Booking not found or you are not authorized to cancel this booking",
+        });
+      }
+
+      const cancelBookingQuery = `
+        UPDATE Booking
+        SET bookingStatus = 'canceled'
+        WHERE bookingID = ?;
+      `;
+
+      db.query(cancelBookingQuery, [bookingID], (err, results) => {
+        if (err) {
+          console.error("Error canceling booking:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Error canceling booking.",
+          });
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "Your booking was successfully canceled!",
+        });
+      });
+    });
+  }
+);
+
+//Check Available Flights For User
+app.post(
+  "/api/check-available-flights",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const { airline, startDate, endDate } = req.body;
+
+    if (!airline || !startDate || !endDate) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const query = `
+      SELECT 
+        f.flightID, 
+        al.name AS airlineName, 
+        f.departureTime, 
+        f.arrivalTime, 
+        f.price
+      FROM Flight f
+      JOIN Airline al ON f.airlineID = al.airlineID
+      WHERE al.name = ? 
+        AND DATE(f.departureTime) >= DATE(?) 
+        AND DATE(f.arrivalTime) <= DATE(?)
+      ORDER BY ABS(TIMESTAMPDIFF(SECOND, DATE(f.departureTime), DATE(?)));
+    `;
+
+    const params = [airline, startDate, endDate, startDate];
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error("Error fetching flights:", err);
+        return res.status(500).json({ error: "Error fetching flights" });
+      }
+
+      if (results.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No flights available for the selected dates." });
+      }
+
+      res.status(200).json(results);
+    });
+  }
+);
+
+// route to fetch airline names
+app.get(
+  "/api/airlines",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const query = `
+      SELECT DISTINCT name 
+      FROM Airline;
+    `;
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error fetching airlines:", err);
+        return res.status(500).json({ error: "Error fetching airlines" });
+      }
+
+      res.status(200).json(results);
     });
   }
 );

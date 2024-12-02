@@ -1,25 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function CancelBooking() {
-    const [text, setText] = useState('');
-    const [bookingID, setBookingID] = useState('');
+    const [bookingIDs, setBookingIDs] = useState([]);
+    const [selectedBookingID, setSelectedBookingID] = useState('');
     const [confirmation, setConfirmation] = useState(null);
+
+    useEffect(() => {
+        const fetchActiveBookings = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('User is not authenticated.');
+                }
+
+                const response = await fetch('/api/bookings', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch active bookings.');
+                }
+
+                const data = await response.json();
+                const activeBookings = data.filter(booking => booking.bookingStatus === 'confirmed');
+                setBookingIDs(activeBookings.map(booking => booking.bookingID));
+            } catch (error) {
+                console.error('Error fetching active bookings:', error);
+            }
+        };
+
+        fetchActiveBookings();
+    }, []);
 
     const handleCancelBooking = async (e) => {
         e.preventDefault();
-        setBookingID(text);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('User is not authenticated.');
+            }
 
-        /*
-        const response = await fetch('/api/cancel-booking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bookingID: text }),
-        });
-        const data = await response.json();
-        */
-       
-        const data = { success: true };
-        setConfirmation(data);
+            const response = await fetch('/api/cancel-booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ bookingID: selectedBookingID }),
+            });
+
+            const data = await response.json();
+            setConfirmation(data);
+        } catch (error) {
+            console.error('Error:', error);
+            setConfirmation({ success: false, message: 'Failed to cancel booking.' });
+        }
     };
 
     return (
@@ -27,13 +66,18 @@ function CancelBooking() {
             <h2>Cancel Booking</h2>
             <div className="userInput">
                 <form onSubmit={handleCancelBooking}>
-                    <input
-                        type="text"
-                        placeholder="Booking ID"
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
+                    <select
+                        value={selectedBookingID}
+                        onChange={(e) => setSelectedBookingID(e.target.value)}
                         required
-                    />
+                    >
+                        <option value="">Select Booking ID</option>
+                        {bookingIDs.map((id) => (
+                            <option key={id} value={id}>
+                                {id}
+                            </option>
+                        ))}
+                    </select>
                     <div>
                         <button type="submit">Cancel Booking</button>
                     </div>
@@ -43,8 +87,8 @@ function CancelBooking() {
             {confirmation && (
                 <p>
                     {confirmation.success
-                        ? `Booking with ID ${bookingID} was successfully canceled.`
-                        : `Error: ${confirmation.message}`}
+                        ? `Booking with ID ${selectedBookingID} was successfully canceled.`
+                        : `${confirmation.message}`}
                 </p>
             )}
         </div>
