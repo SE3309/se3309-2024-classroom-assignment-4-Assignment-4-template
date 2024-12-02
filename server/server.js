@@ -99,6 +99,16 @@ app.put('/api/points', passport.authenticate("jwt", { session: false }), (req, r
   })
 } )
 
+// get points
+app.get('/api/points', passport.authenticate("jwt", {session: false}), (req, res) => {
+  const { userID } = req.user;
+  const sql = "SELECT points FROM User WHERE userID = ?";
+  db.query(sql, [userID], (err, result) => {
+    if (err) return res.status(500).json({message: "Database error fetching user points."});
+    res.status(200).json(result)
+  })
+})
+
 // registration route
 app.post("/api/register", (req, res) => {
   const { name, email, password } = req.body;
