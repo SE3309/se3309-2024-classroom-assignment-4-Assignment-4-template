@@ -15,6 +15,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import ManageStudentsPage from "./pages/ManageStudents/ManageStudentsPage";
 import CourseRegistrationPage from './pages/CourseRegistration/CourseRegistrationPage';
 import ModifyCourse from './pages/ModifyCourse/ModifyCourse';
+import ManageFacultyPage from './pages/ManageFaculty/ManageFaculty';
 const App = () => {
   return (
     <UserProvider>
@@ -131,6 +132,17 @@ const App = () => {
                 <>
                   <Header />
                   <ModifyCourse />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage-faculty"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Header />
+                  <ManageFacultyPage />
                 </>
               </ProtectedRoute>
             }
