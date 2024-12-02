@@ -1200,7 +1200,7 @@ def unregister_course_for_student():
     try:
         cursor = conn.cursor()
 
-        # Unregister the student
+        
         query = """
         DELETE FROM StudentCourse
         WHERE studentID = %s AND courseCode = %s

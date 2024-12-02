@@ -5,7 +5,6 @@ import "./CourseRegistrationPage.css";
 
 const CourseRegistrationPage = () => {
   const { user } = useContext(UserContext);
-  console.log("User from context in CourseRegistrationPage:", user);
   const [courses, setCourses] = useState([]);
   const [registeredCourses, setRegisteredCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,8 +177,8 @@ const CourseRegistrationPage = () => {
           {registeredCourses.length > 0 ? (
             <ul className="registered-course-list">
               {registeredCourses.map((courseCode) => (
-                <li key={courseCode}>
-                  <div>{courseCode}</div>
+                <li key={courseCode} className="registered-course-item">
+                  <div className="course-details">{courseCode}</div>
                   <button
                     className="unregister-button"
                     onClick={() => handleUnregister(courseCode)}
