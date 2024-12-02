@@ -11,6 +11,8 @@ export const UserProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  const isAdmin = user?.role == "Admin" ? true : false;
+
   const login = (userData) => {
     // Store both the token and user data
     localStorage.setItem('user', JSON.stringify(userData));
@@ -24,7 +26,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, login, logout, isAdmin }}>
       {children}
     </UserContext.Provider>
   );

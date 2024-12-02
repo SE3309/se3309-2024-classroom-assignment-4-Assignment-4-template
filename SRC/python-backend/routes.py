@@ -122,7 +122,7 @@ def faculty_login():
             'facultyID': user['facultyID'],
             'email': user['email'],
             'fullName': user['fullName'],
-            'role': 'Faculty',  # Explicitly set role
+            'role': 'Admin' if user['role'] == 'Admin' else 'Faculty',  # Explicitly set role
             'officeNo': user['officeNo'],
             'contactInfo': user['contactInfo'],
             'departmentID': user['departmentID']
@@ -1034,9 +1034,10 @@ def delete_faculty_course(course_code, cyear):
         db.close_connection()
 
 @routes.route('/api/emergency-contacts', methods=['POST'])
-def add_emergency_contact():
+def add_or_update_emergency_contact():
     """
-    Add a new contact and associate it with a student as an emergency contact.
+    Add a new contact or update it if it already exists, 
+    and associate it with a student as an emergency contact.
     """
     data = request.get_json()
     if not data:
@@ -1064,8 +1065,16 @@ def add_emergency_contact():
         cursor.execute(contact_exists_query, (phone_number,))
         contact_exists = cursor.fetchone()[0] > 0
 
-        # If the contact doesn't exist, create it
-        if not contact_exists:
+        if contact_exists:
+            # Update the existing contact if it already exists
+            update_contact_query = """
+            UPDATE Contact
+            SET cName = %s, address = %s, postalCode = %s
+            WHERE phoneNumber = %s
+            """
+            cursor.execute(update_contact_query, (contact_name, address, postal_code, phone_number))
+        else:
+            # If the contact doesn't exist, create it
             create_contact_query = """
             INSERT INTO Contact (phoneNumber, cName, address, postalCode)
             VALUES (%s, %s, %s, %s)
@@ -1073,14 +1082,22 @@ def add_emergency_contact():
             cursor.execute(create_contact_query, (phone_number, contact_name, address, postal_code))
 
         # Link the contact to the student in the EmergencyContact table
-        create_emergency_contact_query = """
-        INSERT INTO EmergencyContact (studentID, phoneNumber)
-        VALUES (%s, %s)
+        # Check to avoid duplicate entries
+        emergency_contact_exists_query = """
+        SELECT COUNT(*) FROM EmergencyContact WHERE studentID = %s AND phoneNumber = %s
         """
-        cursor.execute(create_emergency_contact_query, (student_id, phone_number))
+        cursor.execute(emergency_contact_exists_query, (student_id, phone_number))
+        emergency_contact_exists = cursor.fetchone()[0] > 0
+
+        if not emergency_contact_exists:
+            create_emergency_contact_query = """
+            INSERT INTO EmergencyContact (studentID, phoneNumber)
+            VALUES (%s, %s)
+            """
+            cursor.execute(create_emergency_contact_query, (student_id, phone_number))
 
         conn.commit()
-        return jsonify({"message": "Emergency contact added successfully"}), 201
+        return jsonify({"message": "Emergency contact added or updated successfully"}), 201
 
     except Exception as e:
         conn.rollback()
@@ -1089,6 +1106,7 @@ def add_emergency_contact():
     finally:
         cursor.close()
         db.close_connection()
+
 
 @routes.route('/api/contacts', methods=['GET'])
 def get_all_contacts():
