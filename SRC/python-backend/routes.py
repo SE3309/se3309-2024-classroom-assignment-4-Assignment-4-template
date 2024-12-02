@@ -340,13 +340,18 @@ def get_calendar_events(student_id):
 @routes.route('/api/events', methods=['POST'])
 def add_calendar_event():
     print("\n=== Starting Add Calendar Event Request ===")
+    
+    # Database connection
     conn = db.get_connection()
     if conn is None:
         print("Error: Database connection failed")
         return jsonify({"error": "Database connection failed"}), 500
+    print("Database connection established successfully")
 
     try:
         cursor = conn.cursor(dictionary=True)
+        
+        # Get event data from request
         event_data = request.get_json()
         print(f"Received event data: {event_data}")
 
@@ -359,26 +364,39 @@ def add_calendar_event():
         cyear = event_data.get('cyear')
         student_id = event_data.get('studentId')
 
+        print(f"Extracted event details:\nName: {event_name}\nDescription: {event_description}\nStart: {event_start}\nDuration: {event_duration}\nCourse Code: {course_code}\nAcademic Year: {cyear}\nStudent ID: {student_id}")
+
+        # Check for required fields
         if not all([event_name, event_start, event_duration]):
             print("Error: Missing required fields")
             return jsonify({"error": "Missing required fields"}), 400
 
+        print("All required fields are present. Proceeding with database insert.")
+
+        # Prepare the query to insert event data into the database
         query = """
         INSERT INTO CalendarEvent (eventName, eventDescription, eventStart, eventDuration, courseCode, cyear, studentID)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         print("Executing insert query...")
+        print(f"Query: {query}")
+        
+        # Execute the query with provided data
         cursor.execute(query, (event_name, event_description, event_start, event_duration, course_code, cyear, student_id))
+        
+        # Commit the transaction
         conn.commit()
         print("Event added successfully")
 
         print("=== Add Calendar Event Request Completed Successfully ===\n")
         return jsonify({"message": "Event added successfully!"}), 201
+
     except Exception as e:
         print(f"Error adding event: {str(e)}")
         conn.rollback()
         return jsonify({"error": f"Failed to add event: {str(e)}"}), 500
     finally:
+        # Close cursor and connection
         cursor.close()
         db.close_connection()
         print("Database connection closed")

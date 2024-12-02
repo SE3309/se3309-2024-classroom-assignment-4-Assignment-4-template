@@ -190,7 +190,7 @@ const ManageFacultyPage = () => {
                   }}
                 >
                   <div className="mb-3">
-                    <label className="form-label">Name</label>
+                    <label className="form-label abc">Name</label>
                     <input
                       type="text"
                       className="form-control"
@@ -205,7 +205,7 @@ const ManageFacultyPage = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Email</label>
+                    <label className="form-label abc">Email</label>
                     <input
                       type="email"
                       className="form-control"
@@ -220,7 +220,7 @@ const ManageFacultyPage = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Department</label>
+                    <label className="form-label abc">Department</label>
                     <input
                       type="text"
                       className="form-control"
