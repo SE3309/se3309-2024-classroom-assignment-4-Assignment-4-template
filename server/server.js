@@ -463,7 +463,7 @@ app.get(
   "/api/hotels",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const query = `SELECT hotelName
+    const query = `SELECT DISTINCT hotelName
                 FROM Hotel`;
 
     db.query(query, (err, results) => {
@@ -480,7 +480,7 @@ app.get(
   "/api/airlines",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const query = `SELECT name
+    const query = `SELECT DISTINCT name
                 FROM airline`;
 
     db.query(query, (err, results) => {
