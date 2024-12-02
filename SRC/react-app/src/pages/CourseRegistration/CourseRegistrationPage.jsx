@@ -5,7 +5,7 @@ import "./CourseRegistrationPage.css";
 
 const CourseRegistrationPage = () => {
   const { user } = useContext(UserContext);
-  console.log("User from context in COurseRegistrationPage:", user);
+  console.log("User from context in CourseRegistrationPage:", user);
   const [courses, setCourses] = useState([]);
   const [registeredCourses, setRegisteredCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,7 +13,6 @@ const CourseRegistrationPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 10;
 
-  
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -27,24 +26,41 @@ const CourseRegistrationPage = () => {
       }
     };
 
+    const fetchRegisteredCourses = async () => {
+      if (!user || !user.studentID) return;
+
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:5000/api/student/${user.studentID}/registered-courses`
+        );
+        setRegisteredCourses(response.data.map((course) => course.courseCode));
+      } catch (error) {
+        console.error("Error fetching registered courses:", error);
+      }
+    };
+
     fetchCourses();
-  }, []);
+    fetchRegisteredCourses();
+  }, [user]);
 
   const handleRegister = async (courseCode) => {
-    if (!user || !user.id) {
+    if (!user || !user.studentID) {
       alert("User not logged in. Please log in to register for courses.");
       return;
     }
 
     try {
+      const payload = {
+        studentID: user.studentID,
+        courseCode,
+        cyear: 2025,
+      };
+
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/student/register-course",
-        {
-          studentID: user.id,
-          courseCode,
-          cyear: 2025,
-        }
+        `http://127.0.0.1:5000/api/student/register-course`,
+        payload
       );
+
       alert(response.data.message || "Course registered successfully!");
       setRegisteredCourses([...registeredCourses, courseCode]);
     } catch (error) {
@@ -54,16 +70,22 @@ const CourseRegistrationPage = () => {
   };
 
   const handleUnregister = async (courseCode) => {
-    if (!user || !user.id) {
+    if (!user || !user.studentID) {
       alert("User not logged in. Please log in to unregister courses.");
       return;
     }
 
     try {
+      const payload = {
+        studentID: user.studentID,
+        courseCode,
+      };
+
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/student/unregister-course",
-        { studentID: user.id, courseCode }
+        `http://127.0.0.1:5000/api/student/unregister-course`,
+        payload
       );
+
       alert(response.data.message || "Course unregistered successfully!");
       setRegisteredCourses(registeredCourses.filter((id) => id !== courseCode));
     } catch (error) {
@@ -91,7 +113,6 @@ const CourseRegistrationPage = () => {
     <div className="course-registration-container">
       <h1 className="page-title">Course Registration</h1>
       <div className="columns">
-        
         <div className="column">
           <h2>Available Courses</h2>
           <input
@@ -152,26 +173,22 @@ const CourseRegistrationPage = () => {
           </div>
         </div>
 
-        {/* Right Column: Registered Courses */}
         <div className="column">
           <h2>Registered Courses</h2>
           {registeredCourses.length > 0 ? (
-            <div className="registered-course-list">
-              {registeredCourses.map((courseCode) => {
-                const course = courses.find((c) => c.courseCode === courseCode);
-                return (
-                  <div key={courseCode} className="registered-course-item">
-                    <h3>{course?.courseName}</h3>
-                    <button
-                      className="unregister-button"
-                      onClick={() => handleUnregister(courseCode)}
-                    >
-                      Unregister
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <ul className="registered-course-list">
+              {registeredCourses.map((courseCode) => (
+                <li key={courseCode}>
+                  <div>{courseCode}</div>
+                  <button
+                    className="unregister-button"
+                    onClick={() => handleUnregister(courseCode)}
+                  >
+                    Unregister
+                  </button>
+                </li>
+              ))}
+            </ul>
           ) : (
             <p>No registered courses.</p>
           )}

@@ -1107,6 +1107,7 @@ def get_all_contacts():
     finally:
         cursor.close()
         db.close_connection()
+
 @routes.route('/api/student/register-course', methods=['POST'])
 def register_course_for_student():
     """
@@ -1180,3 +1181,42 @@ def get_available_courses():
         cursor.close()
         db.close_connection()
 
+@routes.route('/api/student/unregister-course', methods=['POST'])
+def unregister_course_for_student():
+    """
+    Unregister a student from a course.
+    """
+    conn = db.get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    data = request.get_json()
+    student_id = data.get('studentID')
+    course_code = data.get('courseCode')
+
+    if not all([student_id, course_code]):
+        return jsonify({"error": "Missing required fields: studentID or courseCode"}), 400
+
+    try:
+        cursor = conn.cursor()
+
+        # Unregister the student
+        query = """
+        DELETE FROM StudentCourse
+        WHERE studentID = %s AND courseCode = %s
+        """
+        cursor.execute(query, (student_id, course_code))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "No course found to unregister"}), 404
+
+        return jsonify({"message": "Student unregistered from the course successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        db.close_connection()
