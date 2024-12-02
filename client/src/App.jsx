@@ -10,6 +10,7 @@ import CheckAvailableFlights from "./components/CheckAvailableFlights";
 import UpdateUserPoints from "./components/UpdateUserPoints";
 import AuthPage from "./components/AuthPage";
 import { jwtDecode } from "jwt-decode";
+import UserReviews from "./components/UserReviews";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,6 +51,7 @@ function App() {
       <SearchFlights />
       <BookHotelRoom />
       <AddReview />
+      <UserReviews />
       <ViewAverageRating />
       <CancelBooking />
       <UserBookingHistory />
