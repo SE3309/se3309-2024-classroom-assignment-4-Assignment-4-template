@@ -44,12 +44,6 @@ function UpdateUserPoints() {
         } catch (err) {
             setConfirmation({ success: false, message: "Failed to update points." });
         }
-
-        // TEST DATA
-        // const data = {
-        //     success: true
-        // };
-        setConfirmation(data);
     };
 
     return (

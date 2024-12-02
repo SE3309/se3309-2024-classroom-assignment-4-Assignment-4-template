@@ -42,7 +42,7 @@ function BookHotelRoom() {
     };
 
     fetchBookings();
-  }, [confirmation]);
+  }, [confirmation, bookings]);
 
   const handleBooking = async (e) => {
     e.preventDefault();
