@@ -1,9 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function UpdateUserPoints() {
     const token = localStorage.getItem('token');
-    const [points, setPoints] = useState('');
+    const [points, setPoints] = useState(null);
     const [confirmation, setConfirmation] = useState(null);
+    const [currentPoints, setCurrentPoints] = useState(null);
+
+    useEffect(() => {
+        const fetchPoints = async () => {
+            try {
+                const response = await fetch(`/api/points`, {
+                    headers: {
+                        method: "GET",
+                        authorization: `Bearer ${token}`
+                    }
+                })
+                const data = await response.json()
+                setCurrentPoints(data[0].points);
+            } catch (error) {
+                setConfirmation({success: false, message: "Error fetching points for user."});
+            }
+        }
+        
+        fetchPoints();
+
+    }, []);
 
     const handleUpdatePoints = async (e) => {
         e.preventDefault();
@@ -19,6 +40,7 @@ function UpdateUserPoints() {
             });
             const data = await response.json();
             setConfirmation(data);
+            setCurrentPoints(Number(points) + Number(currentPoints));
         } catch (err) {
             setConfirmation({ success: false, message: "Failed to update points." });
         }
@@ -33,6 +55,7 @@ function UpdateUserPoints() {
     return (
         <div className="container updatePoints">
             <h2>Update User Points</h2>
+            <div><strong>Current Points:</strong> {currentPoints}</div>
             <div className='userInput'>
                 <form onSubmit={handleUpdatePoints}>
                     {/* <input
