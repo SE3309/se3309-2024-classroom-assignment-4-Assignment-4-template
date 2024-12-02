@@ -1217,3 +1217,199 @@ def get_available_courses():
         cursor.close()
         db.close_connection()
 
+@routes.route('/api/faculty/view', methods=['GET'])
+def view_faculty():
+    print("\n=== Starting View Faculty Request ===")
+    search_query = request.args.get('search', '').strip()
+    conn = db.get_connection()
+ 
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+ 
+    try:
+        cursor = conn.cursor(dictionary=True)
+        if search_query:
+            query = """
+                SELECT facultyID, fullName AS name, email,
+                       (SELECT departmentName FROM department WHERE departmentID = f.departmentID) AS department
+                FROM facultyMember f
+                WHERE fullName LIKE %s OR facultyID LIKE %s
+            """
+            cursor.execute(query, (f"%{search_query}%", f"%{search_query}%"))
+        else:
+            query = """
+                SELECT facultyID, fullName AS name, email,
+                       (SELECT departmentName FROM department WHERE departmentID = f.departmentID) AS department
+                FROM faculty f
+            """
+            cursor.execute(query)
+ 
+        result = cursor.fetchall()
+        print(f"Found {len(result)} faculty members")
+    except Exception as e:
+        print(f"Error fetching faculty: {str(e)}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")
+ 
+    if not result:
+        return jsonify([]), 200
+ 
+    print("=== View Faculty Request Completed Successfully ===\n")
+    return jsonify(result)
+ 
+@routes.route('/api/faculty/<int:facultyID>', methods=['DELETE'])
+def delete_faculty(facultyID):
+    print("\n=== Starting Delete Faculty Request ===")
+    conn = db.get_connection()
+ 
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+ 
+    try:
+        cursor = conn.cursor()
+        check_query = "SELECT * FROM FacultyMember WHERE facultyID = %s"
+        cursor.execute(check_query, (facultyID,))
+        faculty = cursor.fetchone()
+        if not faculty:
+            print(f"Faculty member with ID {facultyID} not found")
+            return jsonify({"error": "Faculty member not found"}), 404
+ 
+        delete_query = "DELETE FROM FacultyMember WHERE facultyID = %s"
+        cursor.execute(delete_query, (facultyID,))
+        conn.commit()
+        print(f"Faculty member with ID {facultyID} deleted successfully")
+    except Exception as e:
+        print(f"Error deleting faculty: {str(e)}")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")
+ 
+    return jsonify({"message": f"Faculty member with ID {facultyID} deleted successfully"}), 200
+ 
+@routes.route('/api/faculty', methods=['POST'])
+def add_faculty():
+    print("\n=== Starting Add Faculty Request ===")
+    data = request.json
+    print(f"Request Data: {data}")  # Debug: Print the incoming data
+    conn = db.get_connection()
+ 
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+ 
+    try:
+        cursor = conn.cursor()
+ 
+        # Debug: Check if we received the expected department name
+        if 'department' not in data:
+            print("Error: department is missing in request data")
+            return jsonify({"error": "Department is required"}), 400
+        print(f"Looking for department: {data['department']}")  # Debug: Show the department being searched for
+ 
+        # Fetch the departmentID based on departmentName
+        department_query = """
+            SELECT departmentID FROM Department WHERE departmentName = %s
+        """
+        cursor.execute(department_query, (data['department'],))
+        department_result = cursor.fetchone()
+ 
+        # Debug: Show the result of the department query
+        if department_result is None:
+            print(f"Error: Department '{data['department']}' not found")
+            return jsonify({"error": "Department not found"}), 400
+        print(f"Department found, departmentID: {department_result[0]}")  # Debug: Show the departmentID
+ 
+        departmentID = department_result[0]  # Get the departmentID from the result
+ 
+        # Debug: Show the query about to be executed for the insert
+        insert_query = """
+            INSERT INTO FacultyMember (fullName, email, departmentID, role, password, officeNo, contactInfo)
+            VALUES (%s, %s, %s, 'Lecturer', 'default123', 'Office_0', 'N/A')
+        """
+        print(f"Executing insert query: {insert_query}")  # Debug: Show insert query
+        print(f"With values: fullName={data['name']}, email={data['email']}, departmentID={departmentID}")  # Debug: Show values being inserted
+ 
+        # Now insert the new FacultyMember record with the correct departmentID
+        cursor.execute(insert_query, (data['name'], data['email'], departmentID))
+        conn.commit()
+ 
+        # Debug: Confirm the insertion was successful
+        print("Faculty member added successfully")
+    except Exception as e:
+        print(f"Error adding faculty: {str(e)}")  # Debug: Print the actual error message
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")
+ 
+    return jsonify({"message": "Faculty member added successfully"}), 201
+ 
+ 
+@routes.route('/api/faculty/<int:facultyID>', methods=['PUT'])
+def edit_faculty(facultyID):
+    print("\n=== Starting Edit Faculty Request ===")
+    data = request.json
+    print(f"Request Data: {data}")  # Debug: Print the incoming data
+    conn = db.get_connection()
+ 
+    if conn is None:
+        print("Error: Database connection failed")
+        return jsonify({"error": "Database connection failed"}), 500
+ 
+    try:
+        cursor = conn.cursor()
+ 
+        # Debug: Check if we received the expected department name
+        if 'department' not in data:
+            print("Error: departmentID is missing in request data")
+            return jsonify({"error": "departmentID is required"}), 400
+        print(f"Looking for department: {data['department']}")  # Debug: Show the department being searched for
+ 
+        # Fetch the departmentID based on departmentName
+        department_query = """
+            SELECT departmentID FROM Department WHERE departmentName = %s
+        """
+        cursor.execute(department_query, (data['department'],))
+        department_result = cursor.fetchone()
+ 
+        # Debug: Show the result of the department query
+        if department_result is None:
+            print(f"Error: Department '{data['departmentID']}' not found")
+            return jsonify({"error": "Department not found"}), 400
+        print(f"Department found, departmentID: {department_result[0]}")  # Debug: Show the departmentID
+ 
+        departmentID = department_result[0]  # Get the departmentID from the result
+ 
+        # Debug: Show the query about to be executed for the update
+        update_query = """
+            UPDATE FacultyMember
+            SET fullName = %s, email = %s, departmentID = %s
+            WHERE facultyID = %s
+        """
+        print(f"Executing update query: {update_query}")  # Debug: Show update query
+        print(f"With values: fullName={data['name']}, email={data['email']}, departmentID={departmentID}, facultyID={facultyID}")  # Debug: Show values being updated
+ 
+        # Now update the FacultyMember record with the correct departmentID
+        cursor.execute(update_query, (data['name'], data['email'], departmentID, facultyID))
+        conn.commit()
+ 
+        # Debug: Confirm the update was successful
+        print(f"Faculty member with ID {facultyID} updated successfully")
+    except Exception as e:
+        print(f"Error updating faculty: {str(e)}")  # Debug: Print the actual error message
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        db.close_connection()
+        print("Database connection closed")
+ 
+    return jsonify({"message": f"Faculty member with ID {facultyID} updated successfully"}), 200
+
