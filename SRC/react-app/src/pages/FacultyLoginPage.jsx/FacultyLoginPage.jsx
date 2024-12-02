@@ -28,7 +28,7 @@ const FacultyLoginPage = () => {
     };
 
     return (
-        <div className="faculty-login-page">
+        <div className="login-page">
             <h2>Faculty Member Login</h2>
             <form onSubmit={handleLogin}>
                 <div className="form-group">

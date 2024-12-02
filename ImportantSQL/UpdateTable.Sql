@@ -37,3 +37,19 @@ ADD CONSTRAINT emergencycontact_ibfk_1 FOREIGN KEY (studentID) REFERENCES Studen
 ALTER TABLE StudentCourse DROP FOREIGN KEY studentcourse_ibfk_1;
 ALTER TABLE StudentCourse
 ADD CONSTRAINT studentcourse_ibfk_1 FOREIGN KEY (studentID) REFERENCES Student(studentID) ON DELETE CASCADE;
+
+
+-- Step 1: Drop Foreign Key Constraints
+ALTER TABLE Course DROP FOREIGN KEY course_ibfk_2;
+ALTER TABLE StudentCourse DROP FOREIGN KEY studentcourse_ibfk_1;
+
+-- Step 2: Modify the facultyID column to AUTO_INCREMENT
+ALTER TABLE FacultyMember DROP PRIMARY KEY;
+ALTER TABLE FacultyMember MODIFY COLUMN facultyID INT AUTO_INCREMENT PRIMARY KEY;
+
+-- Step 3: Re-add Foreign Key Constraints with ON DELETE CASCADE
+ALTER TABLE Course
+ADD CONSTRAINT course_ibfk_2 FOREIGN KEY (instructor) REFERENCES FacultyMember(facultyID) ON DELETE CASCADE;
+
+ALTER TABLE StudentCourse
+ADD CONSTRAINT studentcourse_ibfk_1 FOREIGN KEY (courseCode, cyear) REFERENCES Course(courseCode, cyear) ON DELETE CASCADE;

@@ -80,7 +80,7 @@ const FacultyDashboard = ({
   </div>
 );
 
-const AdminDashboard = ({ user, handleManageStudents }) => (
+const AdminDashboard = ({ user, handleManageStudents,handleManageFaculty }) => (
   <div className="home-container">
     <div className="welcome-header">
       <h1 className="welcome-message">Welcome Back!</h1>
@@ -97,6 +97,12 @@ const AdminDashboard = ({ user, handleManageStudents }) => (
           onClick={() => handleManageStudents()}
         >
           Manage Students
+        </button>
+        <button
+          className="action-button"
+          onClick={() => handleManageFaculty()}
+        >
+          Manage Faculty
         </button>
       </div>
     </div>
@@ -142,6 +148,9 @@ const HomePage = () => {
   const handleManageStudents = () => {
     navigate("/manage-students");
   };
+  const handleManageFaculty= () => {
+    navigate("/manage-faculty");
+  };
 
   return (
     <div className="home-container">
@@ -159,6 +168,7 @@ const HomePage = () => {
         <AdminDashboard
           user={user}
           handleManageStudents={handleManageStudents}
+          handleManageFaculty={handleManageFaculty}
         />
       ) : (
         <FacultyDashboard
