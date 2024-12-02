@@ -66,10 +66,17 @@ const ViewCalendarPage = () => {
     };
 
     const getEventsForDay = (date) => {
-        return events.filter(event => {
-            const eventDate = moment(event.eventStart);
-            return eventDate.isSame(date, 'day');
-        });
+        return events
+            .filter(event => {
+                const eventDate = moment(event.eventStart);
+                return eventDate.isSame(date, 'day');
+            })
+            .sort((a, b) => {
+                // Compare by event start time
+                const timeA = moment(a.eventStart);
+                const timeB = moment(b.eventStart);
+                return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
+            });
     };
 
     if (loading) return <div>Loading...</div>;
@@ -121,7 +128,8 @@ const ViewCalendarPage = () => {
                                 <div key={event.eventID} className="event">
                                     <div className="event-name">{event.eventName}</div>
                                     <div className="event-time">
-                                        {moment(event.eventStart).format('h:mm A')}
+                                    {moment(event.eventStart).add(5, 'hours').format('h:mm A')}
+
                                     </div>
                                     <button
                                         className="delete-button"

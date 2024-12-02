@@ -1,71 +1,69 @@
 /* LoginPage.css */
-.faculty-login-page {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    border-radius: 8px;
-    background-color: var(--background-dark);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-top: 80px;
+.login-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-light);
+    color: var(--text-primary);
 }
 
-.faculty-login-page h2 {
-    text-align: center;
-    color: var(--text-primary);
+.login-page h2 {
+    color: white;
     margin-bottom: 30px;
-    font-size: 1.8em;
 }
 
 .form-group {
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: var(--text-primary);
-    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: var(--background-light);
+    background-color: var(--background-dark);
     color: var(--text-primary);
-    font-size: 1em;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--success-color);
-    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+    border-color: var(--primary-color);
 }
 
 .error {
     color: var(--danger-color);
-    font-size: 0.9em;
-    margin: 15px 0;
+    margin-bottom: 15px;
     text-align: center;
-    background-color: rgba(220, 53, 69, 0.1);
-    padding: 8px;
-    border-radius: 4px;
 }
 
-.faculty-login-page button {
+form {
+    background-color: var(--background-dark);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
-    padding: 12px;
-    background-color: var(--success-color);
+    max-width: 360px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
 }
 
-.faculty-login-page button:hover {
-    background-color: #218838;
+button:hover {
+    background-color: #0056b3;
 }

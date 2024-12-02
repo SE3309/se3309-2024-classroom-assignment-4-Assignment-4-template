@@ -14,7 +14,6 @@ const EmergencyContactCard = ({ contact, onEdit, onRemove }) => {
   const handleEditToggle = () => {
     if (isEditing) {
       // Save the updated contact when exiting edit mode
-      console.log(editedContact);
       onEdit(editedContact);
     }
     setIsEditing(!isEditing);

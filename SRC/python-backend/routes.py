@@ -122,7 +122,7 @@ def faculty_login():
             'facultyID': user['facultyID'],
             'email': user['email'],
             'fullName': user['fullName'],
-            'role': 'Faculty',  # Explicitly set role
+            'role': 'Admin' if user['role'] == 'Admin' else 'Faculty',  # Explicitly set role
             'officeNo': user['officeNo'],
             'contactInfo': user['contactInfo'],
             'departmentID': user['departmentID']
@@ -340,13 +340,18 @@ def get_calendar_events(student_id):
 @routes.route('/api/events', methods=['POST'])
 def add_calendar_event():
     print("\n=== Starting Add Calendar Event Request ===")
+    
+    # Database connection
     conn = db.get_connection()
     if conn is None:
         print("Error: Database connection failed")
         return jsonify({"error": "Database connection failed"}), 500
+    print("Database connection established successfully")
 
     try:
         cursor = conn.cursor(dictionary=True)
+        
+        # Get event data from request
         event_data = request.get_json()
         print(f"Received event data: {event_data}")
 
@@ -359,26 +364,39 @@ def add_calendar_event():
         cyear = event_data.get('cyear')
         student_id = event_data.get('studentId')
 
+        print(f"Extracted event details:\nName: {event_name}\nDescription: {event_description}\nStart: {event_start}\nDuration: {event_duration}\nCourse Code: {course_code}\nAcademic Year: {cyear}\nStudent ID: {student_id}")
+
+        # Check for required fields
         if not all([event_name, event_start, event_duration]):
             print("Error: Missing required fields")
             return jsonify({"error": "Missing required fields"}), 400
 
+        print("All required fields are present. Proceeding with database insert.")
+
+        # Prepare the query to insert event data into the database
         query = """
         INSERT INTO CalendarEvent (eventName, eventDescription, eventStart, eventDuration, courseCode, cyear, studentID)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         print("Executing insert query...")
+        print(f"Query: {query}")
+        
+        # Execute the query with provided data
         cursor.execute(query, (event_name, event_description, event_start, event_duration, course_code, cyear, student_id))
+        
+        # Commit the transaction
         conn.commit()
         print("Event added successfully")
 
         print("=== Add Calendar Event Request Completed Successfully ===\n")
         return jsonify({"message": "Event added successfully!"}), 201
+
     except Exception as e:
         print(f"Error adding event: {str(e)}")
         conn.rollback()
         return jsonify({"error": f"Failed to add event: {str(e)}"}), 500
     finally:
+        # Close cursor and connection
         cursor.close()
         db.close_connection()
         print("Database connection closed")
@@ -1034,9 +1052,10 @@ def delete_faculty_course(course_code, cyear):
         db.close_connection()
 
 @routes.route('/api/emergency-contacts', methods=['POST'])
-def add_emergency_contact():
+def add_or_update_emergency_contact():
     """
-    Add a new contact and associate it with a student as an emergency contact.
+    Add a new contact or update it if it already exists, 
+    and associate it with a student as an emergency contact.
     """
     data = request.get_json()
     if not data:
@@ -1064,8 +1083,16 @@ def add_emergency_contact():
         cursor.execute(contact_exists_query, (phone_number,))
         contact_exists = cursor.fetchone()[0] > 0
 
-        # If the contact doesn't exist, create it
-        if not contact_exists:
+        if contact_exists:
+            # Update the existing contact if it already exists
+            update_contact_query = """
+            UPDATE Contact
+            SET cName = %s, address = %s, postalCode = %s
+            WHERE phoneNumber = %s
+            """
+            cursor.execute(update_contact_query, (contact_name, address, postal_code, phone_number))
+        else:
+            # If the contact doesn't exist, create it
             create_contact_query = """
             INSERT INTO Contact (phoneNumber, cName, address, postalCode)
             VALUES (%s, %s, %s, %s)
@@ -1073,14 +1100,22 @@ def add_emergency_contact():
             cursor.execute(create_contact_query, (phone_number, contact_name, address, postal_code))
 
         # Link the contact to the student in the EmergencyContact table
-        create_emergency_contact_query = """
-        INSERT INTO EmergencyContact (studentID, phoneNumber)
-        VALUES (%s, %s)
+        # Check to avoid duplicate entries
+        emergency_contact_exists_query = """
+        SELECT COUNT(*) FROM EmergencyContact WHERE studentID = %s AND phoneNumber = %s
         """
-        cursor.execute(create_emergency_contact_query, (student_id, phone_number))
+        cursor.execute(emergency_contact_exists_query, (student_id, phone_number))
+        emergency_contact_exists = cursor.fetchone()[0] > 0
+
+        if not emergency_contact_exists:
+            create_emergency_contact_query = """
+            INSERT INTO EmergencyContact (studentID, phoneNumber)
+            VALUES (%s, %s)
+            """
+            cursor.execute(create_emergency_contact_query, (student_id, phone_number))
 
         conn.commit()
-        return jsonify({"message": "Emergency contact added successfully"}), 201
+        return jsonify({"message": "Emergency contact added or updated successfully"}), 201
 
     except Exception as e:
         conn.rollback()
@@ -1089,6 +1124,7 @@ def add_emergency_contact():
     finally:
         cursor.close()
         db.close_connection()
+
 
 @routes.route('/api/contacts', methods=['GET'])
 def get_all_contacts():
@@ -1181,42 +1217,3 @@ def get_available_courses():
         cursor.close()
         db.close_connection()
 
-@routes.route('/api/student/unregister-course', methods=['POST'])
-def unregister_course_for_student():
-    """
-    Unregister a student from a course.
-    """
-    conn = db.get_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    data = request.get_json()
-    student_id = data.get('studentID')
-    course_code = data.get('courseCode')
-
-    if not all([student_id, course_code]):
-        return jsonify({"error": "Missing required fields: studentID or courseCode"}), 400
-
-    try:
-        cursor = conn.cursor()
-
-        
-        query = """
-        DELETE FROM StudentCourse
-        WHERE studentID = %s AND courseCode = %s
-        """
-        cursor.execute(query, (student_id, course_code))
-        conn.commit()
-
-        if cursor.rowcount == 0:
-            return jsonify({"error": "No course found to unregister"}), 404
-
-        return jsonify({"message": "Student unregistered from the course successfully"}), 200
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-    finally:
-        cursor.close()
-        db.close_connection()
