@@ -28,11 +28,22 @@ const CourseRegistrationPage = () => {
     const fetchRegisteredCourses = async () => {
       if (!user || !user.studentID) return;
 
+      
+      const savedCourses = JSON.parse(localStorage.getItem(`registeredCourses-${user.studentID}`));
+      if (savedCourses) {
+        setRegisteredCourses(savedCourses);
+        return;
+      }
+
       try {
         const response = await axios.get(
           `http://127.0.0.1:5000/api/student/${user.studentID}/registered-courses`
         );
-        setRegisteredCourses(response.data.map((course) => course.courseCode));
+        const courseCodes = response.data.map((course) => course.courseCode);
+        setRegisteredCourses(courseCodes);
+
+        
+        localStorage.setItem(`registeredCourses-${user.studentID}`, JSON.stringify(courseCodes));
       } catch (error) {
         console.error("Error fetching registered courses:", error);
       }
@@ -49,11 +60,7 @@ const CourseRegistrationPage = () => {
     }
 
     try {
-      const payload = {
-        studentID: user.studentID,
-        courseCode,
-        cyear: 2025,
-      };
+      const payload = { studentID: user.studentID, courseCode, cyear: 2025 };
 
       const response = await axios.post(
         `http://127.0.0.1:5000/api/student/register-course`,
@@ -61,7 +68,11 @@ const CourseRegistrationPage = () => {
       );
 
       alert(response.data.message || "Course registered successfully!");
-      setRegisteredCourses([...registeredCourses, courseCode]);
+      const updatedCourses = [...registeredCourses, courseCode];
+      setRegisteredCourses(updatedCourses);
+
+      
+      localStorage.setItem(`registeredCourses-${user.studentID}`, JSON.stringify(updatedCourses));
     } catch (error) {
       console.error("Error registering course:", error);
       alert(error.response?.data?.error || "Failed to register course.");
@@ -75,10 +86,7 @@ const CourseRegistrationPage = () => {
     }
 
     try {
-      const payload = {
-        studentID: user.studentID,
-        courseCode,
-      };
+      const payload = { studentID: user.studentID, courseCode };
 
       const response = await axios.post(
         `http://127.0.0.1:5000/api/student/unregister-course`,
@@ -86,7 +94,11 @@ const CourseRegistrationPage = () => {
       );
 
       alert(response.data.message || "Course unregistered successfully!");
-      setRegisteredCourses(registeredCourses.filter((id) => id !== courseCode));
+      const updatedCourses = registeredCourses.filter((id) => id !== courseCode);
+      setRegisteredCourses(updatedCourses);
+
+      
+      localStorage.setItem(`registeredCourses-${user.studentID}`, JSON.stringify(updatedCourses));
     } catch (error) {
       console.error("Error unregistering course:", error);
       alert(error.response?.data?.error || "Failed to unregister course.");
