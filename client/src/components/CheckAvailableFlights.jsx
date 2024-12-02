@@ -1,67 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function CheckAvailableFlights() {
-  const [departureAirport, setDepartureAirport] = useState('');
-  const [arrivalAirport, setArrivalAirport] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [airline, setAirline] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [flights, setFlights] = useState([]);
-  const [airportCodes, setAirportCodes] = useState([]);
+  const [airlines, setAirlines] = useState([]);
   const [error, setError] = useState(null);
-  const [noFlightsMessage, setNoFlightsMessage] = useState('');
+  const [noFlightsMessage, setNoFlightsMessage] = useState("");
 
   useEffect(() => {
-    const fetchAirportCodes = async () => {
+    const fetchAirlines = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('User is not authenticated.');
+          throw new Error("User is not authenticated.");
         }
 
-        const response = await fetch('/api/airports', {
-          method: 'GET',
+        const response = await fetch("/api/airlines", {
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) {
           const errorResponse = await response.json();
-          throw new Error(errorResponse.error || 'Failed to fetch airport codes.');
+          throw new Error(errorResponse.error || "Failed to fetch airlines.");
         }
 
         const data = await response.json();
-        setAirportCodes(data.map(airport => airport.airportCode));
+        setAirlines(data.map((airline) => airline.name));
       } catch (err) {
-        console.error('Error fetching airport codes:', err);
+        console.error("Error fetching airlines:", err);
         setError(err.message);
       }
     };
 
-    fetchAirportCodes();
+    fetchAirlines();
   }, []);
 
   const handleSearchFlights = async (e) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error('User is not authenticated.');
+        throw new Error("User is not authenticated.");
       }
 
-      const response = await fetch('/api/check-available-flights', {
-        method: 'POST',
+      const response = await fetch("/api/check-available-flights", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ departureAirport, arrivalAirport, startDate, endDate }),
+        body: JSON.stringify({ airline, startDate, endDate }),
       });
 
       if (response.status === 404) {
-        setNoFlightsMessage('No flights available for the selected dates.');
+        setNoFlightsMessage("No flights available for the selected dates.");
         setFlights([]);
         setError(null);
         return;
@@ -69,17 +68,17 @@ function CheckAvailableFlights() {
 
       if (!response.ok) {
         const errorResponse = await response.json();
-        throw new Error(errorResponse.error || 'Failed to fetch flights.');
+        throw new Error(errorResponse.error || "Failed to fetch flights.");
       }
 
       const data = await response.json();
       setFlights(data);
       setError(null);
-      setNoFlightsMessage('');
+      setNoFlightsMessage("");
     } catch (err) {
       setError(err.message);
       setFlights([]);
-      setNoFlightsMessage('');
+      setNoFlightsMessage("");
     }
   };
 
@@ -90,27 +89,14 @@ function CheckAvailableFlights() {
         <form onSubmit={handleSearchFlights}>
           <div>
             <select
-              value={departureAirport}
-              onChange={(e) => setDepartureAirport(e.target.value)}
+              value={airline}
+              onChange={(e) => setAirline(e.target.value)}
               required
             >
-              <option value="">Select Departure Airport</option>
-              {airportCodes.map((code) => (
-                <option key={code} value={code}>
-                  {code}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={arrivalAirport}
-              onChange={(e) => setArrivalAirport(e.target.value)}
-              required
-            >
-              <option value="">Select Arrival Airport</option>
-              {airportCodes.map((code) => (
-                <option key={code} value={code}>
-                  {code}
+              <option value="">Select Airline</option>
+              {airlines.map((name) => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -141,14 +127,33 @@ function CheckAvailableFlights() {
       {flights.length > 0 && (
         <div>
           <h3>Available Flights</h3>
-          <ul>
+          <ul style={{ fontSize: "0.8rem" }}>
             {flights.map((flight) => (
-              <li key={flight.flightID}>
-                <p><strong>Flight ID:</strong> {flight.flightID}</p>
-                <p><strong>Airline:</strong> {flight.airlineName}</p>
-                <p><strong>Departure:</strong> {new Date(flight.departureTime).toLocaleString()}</p>
-                <p><strong>Arrival:</strong> {new Date(flight.arrivalTime).toLocaleString()}</p>
-                <p><strong>Price:</strong> ${flight.price}</p>
+              <li
+                key={flight.flightID}
+                style={{
+                  marginBottom: "10px",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
+                <p>
+                  <strong>Flight ID:</strong> {flight.flightID}
+                </p>
+                <p>
+                  <strong>Airline:</strong> {flight.airlineName}
+                </p>
+                <p>
+                  <strong>Departure:</strong> {new Date(flight.departureTime).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Arrival:</strong> {new Date(flight.arrivalTime).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Price:</strong> ${flight.price}
+                </p>
               </li>
             ))}
           </ul>
