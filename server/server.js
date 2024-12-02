@@ -194,70 +194,178 @@ app.post("/api/login", (req, res) => {
 });
 
 //functionality to add a review
-app.post("/api/add-review", (req, res) => {
-  const { userID, airlineID, hotelID, rating, reviewComment } = req.body;
+app.post("/api/add-review",passport.authenticate("jwt", { session: false }), async (req, res) => {
+    try {
+    const { airlineName, hotelName, rating, reviewComment } = req.body;
+    const { userID } = req.user;
 
-  if (!userID || !rating || !reviewComment) {
+    // Validate required fields
+    if (!userID || !rating || !reviewComment) {
+      return res
+        .status(400)
+        .json({ error: "userID, rating, and reviewComment are required" });
+    }
+
+    //ensure at least one
+    if (!airlineName && !hotelName) {
+      return res
+        .status(400)
+        .json({ error: "Enter either an Airline Name or Hotel Name" });
+    }
+
+    //ensure only one
+    if (airlineName && hotelName) {
+      return res
+        .status(400)
+        .json({ error: "Only one of airline or hotel can be chosen" });
+    }
+
+    
+      let airlineID = null;
+      let hotelID = null;
+
+      // Fetch airlineID if airlineName is provided
+      if (airlineName) {
+        const airlineQuery = "SELECT airlineID FROM Airline WHERE name = ?";
+        const [airlineResults] = await db.promise().query(airlineQuery, [
+          airlineName,
+        ]);
+        if (airlineResults.length === 0) {
+          return res.status(404).json({ error: "Airline not found" });
+        }
+        airlineID = airlineResults[0].airlineID;
+      } 
+      
+      if (hotelName) {
+        const hotelQuery = "SELECT hotelID FROM Hotel WHERE hotelName = ?";
+        const [hotelResults] = await db.promise().query(hotelQuery, [
+          hotelName,
+        ]);
+        if (hotelResults.length === 0) {
+          return res.status(404).json({ error: "Hotel not found" });
+        }
+        hotelID = hotelResults[0].hotelID;
+      }
+
+      if (!hotelID && !airlineID){
+        return res.status(40).json({ error: "Both hotelID & airlineID returned null" });
+      }
+      if (!hotelID && !airlineID){
+        return res.status(400).json({ error: "Both hotelID & airlineID returned values" });
+      }
+
+      // Insert the review
+      const insertQuery = `
+        INSERT INTO Review (userID, airlineID, hotelID, rating, reviewComment, dateCreated)
+        VALUES (?, ?, ?, ?, ?, CAST(NOW() AS DATE))
+      `;
+      const insertParams = [
+        userID,
+        airlineID,
+        hotelID,
+        rating,
+        reviewComment,
+      ];
+
+      const [insertResults] = await db.promise().query(insertQuery, insertParams);
+
+      res.status(201).json({
+        message: "Review added successfully",
+        reviewID: insertResults.insertId,
+      });
+    } catch (err) {
+      console.error("Error adding review:", err.message);
+      res.status(500).json({ error: "Error adding review", details: err.message });
+    }
+  }
+);
+
+
+//to view reviews
+app.get("/api/reviews", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const { userID } = req.user;
+
+    const query = `
+      SELECT 
+        r.reviewID, 
+        r.rating, 
+        r.reviewComment, 
+        r.dateCreated, 
+        a.name AS airlineName, 
+        h.hotelName
+      FROM Review r
+      LEFT JOIN Airline a ON r.airlineID = a.airlineID
+      LEFT JOIN Hotel h ON r.hotelID = h.hotelID
+      WHERE r.userID = ?
+      ORDER BY r.dateCreated DESC;
+    `;
+
+    db.query(query, [userID], (err, results) => {
+      if (err) {
+        console.error("Error fetching user reviews:", err);
+        return res.status(500).json({ message: "Error fetching user reviews." });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "No reviews found for this user." });
+      }
+
+      res.status(200).json(results);
+    });
+  });
+
+
+//Functionality to view the average rating for a hotel or airline
+app.post("/api/view-rating", async (req, res) => {
+  const { airlineName, hotelName } = req.body;
+
+   //ensure at least one
+   if (!airlineName && !hotelName) {
     return res
       .status(400)
-      .json({ error: "userID, rating, and reviewComment are required" });
+      .json({ error: "Enter either an Airline Name or Hotel Name" });
   }
 
-  if (!airlineID && !hotelID) {
-    return res
-      .status(400)
-      .json({ error: "At least one of airlineID and hotelID are required" });
-  }
-
-  if (airlineID && hotelID) {
+  //ensure only one
+  if (airlineName && hotelName) {
     return res
       .status(400)
       .json({ error: "Only one of airline or hotel can be chosen" });
   }
 
-  const query = `
-    INSERT INTO Review (userID, airlineID, hotelID, rating, reviewComment, dateCreated)
-    VALUES (?, ?, ?, ?, ?, CAST(NOW() AS DATE))
-  `;
+  try {
+    let airlineID = null;
+    let hotelID = null;
 
-  const params = [
-    userID,
-    airlineID || null,
-    hotelID || null,
-    rating,
-    reviewComment,
-  ];
-
-  db.query(query, params, (err, results) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "Error adding review", details: err.message });
+    // Fetch airlineID if airlineName is provided
+    if (airlineName) {
+      const airlineQuery = "SELECT airlineID FROM Airline WHERE name = ?";
+      const [airlineResults] = await db.promise().query(airlineQuery, [
+        airlineName,
+      ]);
+      if (airlineResults.length === 0) {
+        return res.status(404).json({ error: "Airline not found" });
+      }
+      airlineID = airlineResults[0].airlineID;
+    } 
+    
+    if (hotelName) {
+      const hotelQuery = "SELECT hotelID FROM Hotel WHERE hotelName = ?";
+      const [hotelResults] = await db.promise().query(hotelQuery, [
+        hotelName,
+      ]);
+      if (hotelResults.length === 0) {
+        return res.status(404).json({ error: "Hotel not found" });
+      }
+      hotelID = hotelResults[0].hotelID;
     }
-    res
-      .status(201)
-      .json({
-        message: "Review added successfully",
-        reviewID: results.insertId,
-      });
-  });
-});
 
-//Functionality to view the average rating for a hotel or airline
-app.post("/api/view-rating", (req, res) => {
-  const { airlineID, hotelID } = req.body;
-
-  if (!airlineID && !hotelID) {
-    return res
-      .status(400)
-      .json({ error: "Provide either an airlineID or hotelID" });
-  }
-
-  if (airlineID && hotelID) {
-    return res
-      .status(400)
-      .json({ error: "Provide just 1 of an airlineID or hotelID" });
-  }
+    if (!hotelID && !airlineID){
+      return res.status(40).json({ error: "Both hotelID & airlineID returned null" });
+    }
+    if (!hotelID && !airlineID){
+      return res.status(400).json({ error: "Both hotelID & airlineID returned values" });
+    }
 
   const query = `
     SELECT AVG(rating) AS averageRating
@@ -281,11 +389,15 @@ app.post("/api/view-rating", (req, res) => {
 
     res.status(200).json({ averageRating: results[0].averageRating });
   });
+
+} catch (err) {
+  console.error("Error getting average:", err.message);
+  res.status(500).json({ error: "Error getting average", details: err.message });
+}
 });
 
 // get airport codes for flight search dropdowns
-app.get(
-  "/api/airports",
+app.get("/api/airports",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const query = `SELECT DISTINCT airportCode
@@ -353,6 +465,23 @@ app.get(
   (req, res) => {
     const query = `SELECT hotelName
                 FROM Hotel`;
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send(`Error fetching hotels: ${err}`);
+      }
+      res.json(results);
+    });
+  }
+);
+// fetch airlines
+app.get(
+  "/api/airlines",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const query = `SELECT name
+                FROM airline`;
 
     db.query(query, (err, results) => {
       if (err) {
