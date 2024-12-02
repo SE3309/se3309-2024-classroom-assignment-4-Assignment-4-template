@@ -190,7 +190,7 @@ const ManageStudentsPage = () => {
 
   return (
     <div className="d-flex flex-column vh-100">
-      <h1 className="text-center m-4">Manage Students</h1>
+      <h1 className="text-center" style={{marginTop: "6rem"}}>Manage Students</h1>
       {/* Top Bar */}
       <div className="container py-3 border-bottom">
         <div className="row align-items-center">
